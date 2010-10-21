@@ -11,47 +11,46 @@ from myhdl import Signal, delay, always_comb, now, Simulation, \
                   intbv, bin, instance, toVHDL, toVerilog
 
 
-def is_prime(n):
-    """checks if n is a prime between 0 - 15 (4bits)"""
 
-    return n in (2, 3, 5, 7, 11, 13) 
-    #return False
+import re
 
+pattern = r'^1?$|^(11+?)\1+$'
+PRIME_ROM = tuple([0 if re.match(pattern, '1'*i) else 1 for i in range(16)])
 
-def prime_detector(E, S):
+#PRIME_ROM = (0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0)
 
-    """ Prime detector. 
+def prime_detector(I, O):
+    """ 
+    Prime detector
 
-    E -- input intbv signal, binary encoded
-    S -- output signal 
+    I -- input intbv signal, binary encoded
+    O -- output signal 
     
-    S is '1' when B is a prime number
+    O is '1' when I is a prime number
     """
 
     @always_comb
     def logic():
-        if is_prime(E):
-            S.next = 1
-        else:
-            S.next = 0
+            O.next = PRIME_ROM[int(I)]
     return logic
 
 
 
 def testBench():
 
-    E = Signal(intbv(0, min=0, max=16))
-    S = Signal(intbv(0, min=0, max=2))
+    I = Signal(intbv(0, min=0, max=16))
+    O = Signal(intbv(0, min=0, max=2))
+    
 
     #pd_instance = prime_detector(E, S)
-    pd_instance = toVHDL(prime_detector, E, S)
+    pd_instance = toVHDL(prime_detector, I, O)
 
     @instance
     def stimulus():
         for i in range(16):
-            E.next = intbv(i)
+            I.next = intbv(i)
             yield delay(10)
-            print "E: " + bin(E, 4) + " (" + str(E) + ") | S: " + bin(S, 1)
+            print "I: " + bin(I, 4) + " (" + str(I) + ") | O: " + bin(O, 1)
 
     return pd_instance, stimulus
 

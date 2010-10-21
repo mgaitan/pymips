@@ -55,7 +55,7 @@ def testBench():
         while True:
             S.next = Signal(intbv(random.randint(0, 4))[2:])
             I0.next, I1.next, I2.next, I3.next = [Signal(intbv(random.randint(0, 255))[32:]) for i in range(4)]
-            yield delay(1)
+            yield delay(5)
 
             print "time: %s | Clock: %i | Inputs: %i %i %i %i | S: %i | Output: %i" % (now(), clk, I0, I1, I2, I3, S, O)
 
