@@ -49,4 +49,4 @@ In a very (very) short time.
 .. _VHDL: http://en.wikipedia.org/wiki/VHDL
 
 .. [1] http://code.google.com/p/gpec2010/
-.. [2] http://computacion.efn.uncor.edu/  (probably a 404, the net an its admins sucks) 
+.. [2] http://computacion.efn.uncor.edu/  (probably a 404, the net and electric lines at the university sucks) 
