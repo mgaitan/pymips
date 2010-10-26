@@ -52,7 +52,7 @@ def alu_control(aluop, funct_field, control_out):
 
 def alu(control, op1, op2, out_, zero):
     """
-    control : 4 bit control vector.
+    control : 4 bit control/selector vector.
     op1: operator 1. 32bits
     op2: operator 2. 32bits
     out: ALU result. 32bits
@@ -71,41 +71,41 @@ def alu(control, op1, op2, out_, zero):
 
     """
 
+
     @always_comb
-    def logic():
-        aux = intbv(0)[32:].signed()
-    
+    def logic_alu():
         if control == int('0000',2):
-            aux =  op1 & op2
+            out_.next =  op1 & op2
 
         elif control == int('0001',2):
-            aux =  op1 | op2
+            out_.next =  op1 | op2
 
         elif control == int('0010',2):
-            aux =  op1 + op2           #what happend if there is overflow ?
+            out_.next =  op1 + op2           #what happend if there is overflow ?
        
         elif control == int('0110',2):
-            aux =  op1 - op2
+            out_.next =  op1 - op2
             
 
         elif control == int('0111',2):
             #TODO: set on less than
             pass
-        elif bin(control, 4) == '1100':
-            aux =  ~ (op1 | op2)   #TODO check this
-           
 
-        if aux == 0:
+        elif bin(control, 4) == '1100':
+            out_.next =  ~ (op1 | op2)   #TODO check this
+    
+
+    @always_comb
+    def zero_dector():
+        if out_ == 0:
             zero.next = 1
         else:
             zero.next = 0
 
-        out_.next = aux
-
-    return logic
+    return logic_alu, zero_dector
 
 
-
+### TESTBENCHS
 
 def testBench_alu():
 
@@ -114,11 +114,13 @@ def testBench_alu():
     op1_i = Signal(intbv(0)[32:])
     op2_i = Signal(intbv(0)[32:])
     
-    out_i = Signal(intbv(0)[32:].signed()) 
+    out_i = Signal(intbv(0,  min=-(2**31), max=2**31-1)) 
 
     zero_i = Signal(bool(False))
     
-    alu_i = alu(control_i, op1_i, op2_i, out_i, zero_i)
+    #alu_i = alu(control_i, op1_i, op2_i, out_i, zero_i)
+    alu_i = toVHDL(alu, control_i, op1_i, op2_i, out_i, zero_i)
+
 
     control_func = (('0000', 'AND'), ('0001', 'OR'),  ('0010', 'add'), ('0110', 'substract'), ('0111', 'set on <'), ('1100', 'NOR') )
 
