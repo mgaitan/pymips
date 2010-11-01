@@ -12,6 +12,7 @@ import random
 from myhdl import Signal, delay, always_comb, always, Simulation, \
                   intbv, bin, instance, instances, now, toVHDL
 
+from myhdl.conversion import analyze
 
 
 def alu(control, op1, op2, out_, zero):
@@ -35,6 +36,7 @@ def alu(control, op1, op2, out_, zero):
 
     """
 
+    
 
     @always_comb
     def logic_alu():
@@ -84,7 +86,7 @@ def testBench_alu():
     
     #alu_i = alu(control_i, op1_i, op2_i, out_i, zero_i)
     alu_i = toVHDL(alu, control_i, op1_i, op2_i, out_i, zero_i)
-
+    #alu_i = analyze(alu, control_i, op1_i, op2_i, out_i, zero_i)
 
     control_func = (('0000', 'AND'), ('0001', 'OR'),  ('0010', 'add'), ('0110', 'substract'), ('0111', 'set on <'), ('1100', 'NOR') )
 

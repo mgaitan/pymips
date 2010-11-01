@@ -29,9 +29,9 @@ I must implement a `MIPS <http://en.wikipedia.org/wiki/MIPS_architecture>`_ pipe
 How 
 ----
 
-To describe hardware formally an HDL_ computer language is necessary. In my course 
+To describe hardware formally a HDL_ computer language is necessary. In my course 
 the standard is VHDL_ but I need (because I have no time nor stomach to that kind of 
-evilness) and want use Python. 
+evilness) and want to use Python. 
 
 So,  `MyHDL <http://myhdl.org>`_ is my option. 
 
