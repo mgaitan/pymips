@@ -12,10 +12,11 @@ from myhdl import Signal, delay, always_comb, always, Simulation, \
                   intbv, bin, instance, instances, now, toVHDL
 
 
-def register_file (read_reg1, read_reg2, write_reg, data_in, write_control, out_data1, out_data2, depth=32):
+def register_file (read_reg1, read_reg2, write_reg, data_in, write_control, out_data1, out_data2, depth=8):
 
     mem = [Signal(intbv(0, min=-(2**31), max=2**31-1)) for i in range(depth)]
-   
+    
+
     @always_comb
     def write():
         if write_control:
@@ -26,6 +27,9 @@ def register_file (read_reg1, read_reg2, write_reg, data_in, write_control, out_
         if not write_control:
             out_data1.next = mem[int(read_reg1)]
             out_data2.next = mem[int(read_reg2)]
+        
+        print [int(i.val) for i in mem]
+    
 
     return write, read
 

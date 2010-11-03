@@ -6,8 +6,6 @@
 Control
 """
 
-import pprint
-
 from myhdl import Signal, delay, always_comb, always, Simulation, \
                   intbv, bin, instance, instances, now, toVHDL
 
@@ -34,7 +32,7 @@ def control(opcode, RegDst, Branch, MemRead, MemtoReg, ALUop, MemWrite, ALUSrc, 
             Branch.next = 0
             ALUop.next = intbv('10')
         
-        elif opcode == int('100011', 2): #lw
+        elif opcode == 0x23: #lw
             RegDst.next = 0
             ALUSrc.next = 1
             MemtoReg.next = 1
@@ -44,7 +42,7 @@ def control(opcode, RegDst, Branch, MemRead, MemtoReg, ALUop, MemWrite, ALUSrc, 
             Branch.next = 0
             ALUop.next = intbv('00')   
  
-        elif opcode == int('101011', 2): #sw
+        elif opcode == 0x2b: #sw
             ALUSrc.next = 1
             RegWrite.next = 0
             MemRead.next = 0
@@ -52,7 +50,7 @@ def control(opcode, RegDst, Branch, MemRead, MemtoReg, ALUop, MemWrite, ALUSrc, 
             Branch.next = 0
             ALUop.next = intbv('00')   
 
-        elif opcode == int('000100', 2): #beq
+        elif opcode == 0x04: #beq
             ALUSrc.next = 0
             RegWrite.next = 0
             MemRead.next = 0

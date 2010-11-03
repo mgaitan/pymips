@@ -14,12 +14,12 @@ from myhdl import Signal, delay, always_comb, now, Simulation, \
 ROM = [0] * 32
 ROM[0:3] = [ int("01000000001000010000000000000001", 2),        #R1 = R1 + b'0001'
              int("01000000010000100000000000000011", 2),        #R2 = R2 + b'0011'
-             int("00000000001000100100000000100000", 2),        #R8 = R1 + R2
+             int("00000000001000100100000000100000", 2),        #R3 = R1 + R2
               ]
 
 ROM = tuple(ROM)
 
-def intruction_memory(address, instruction):
+def instruction_memory(address, instruction):
     """ 
     address -- the pointer defined by PC 
     instruction -- 32 bit encoded instruction
@@ -40,7 +40,7 @@ def testBench():
     
 
     #pd_instance = prime_detector(E, S)
-    im_instance = toVHDL(intruction_memory, I, O)
+    im_instance = toVHDL(instruction_memory, I, O)
 
     @instance
     def stimulus():
