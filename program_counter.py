@@ -13,7 +13,7 @@ from myhdl import Signal, delay, always_comb, always, Simulation, \
 
 def ClkDriver(clk):
 
-    halfPeriod = delay(5)
+    halfPeriod = delay(2)
 
     @always(halfPeriod)
     def driveClk():

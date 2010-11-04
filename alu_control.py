@@ -44,8 +44,8 @@ def alu_control(aluop, funct_field, control_out):
 
             else:
                 control_out.next = intbv(0)
-        else:
-            control_out.next = intbv(0)
+        #else:
+        #    control_out.next = intbv(0)
 
 
     return logic

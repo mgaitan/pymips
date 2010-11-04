@@ -12,12 +12,13 @@ from myhdl import Signal, delay, always, always_comb, now, Simulation, \
 
 from program_counter import ClkDriver, program_counter
 from instruction_memory import instruction_memory
+from instruction_decoder import instruction_dec
 from alu import ALU
 from alu_control import alu_control
 from control import control
 from register_file import register_file
 from sign_extender import sign_extend
-
+from mux import mux2, mux4
 
 DEBUG = True  #set to false to convert 
 
@@ -41,55 +42,55 @@ def datapath(clk, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])):
 
     #intruction memory output connectors
     opcode = Signal(intbv(0)[6:])   #instruction 31:26  - to Control
-    rs = Signal(intbv(0)[4:])       #instruction 25:21  - to read_reg_1
-    rt = Signal(intbv(0)[4:])       #instruction 20:16  - to read_reg_2 and mux controlled by RegDst
-    rd = Signal(intbv(0)[4:])       #instruction 15:11  - to the mux controlled by RegDst
-    shamt = Signal(intbv(0)[4:])    #instruction 10:6   - 
+    rs = Signal(intbv(0)[5:])       #instruction 25:21  - to read_reg_1
+    rt = Signal(intbv(0)[5:])       #instruction 20:16  - to read_reg_2 and mux controlled by RegDst
+    rd = Signal(intbv(0)[5:])       #instruction 15:11  - to the mux controlled by RegDst
+    shamt = Signal(intbv(0)[5:])    #instruction 10:6   - 
     func = Signal(intbv(0)[6:])     #instruction 5:0    - to ALUCtrl
     address = Signal(intbv(0)[16:]) #instruction 15:0   - to Sign Extend
+
+    wr_reg_in = Signal(intbv(0)[5:]) #output of mux_wreg (it's rt or rd depends on RegDst)
 
     address32 = Signal(intbv(0)[32:]) #output of signextend
 
     #register file data vectors (input and outputs)
     data_in, data1, data2 = [Signal( intbv(0, min=-(2**31),max=2**31-1)) for i in range(3)]
+    
+    mux_alu_out = Signal( intbv(0, min=-(2**31),max=2**31-1)) #output of mux_alu_src 
+                                                              #(data2 or address32 depends on ALUSrc)
 
-    #ALU
-    alu_control_out = Signal(intbv(0)[4:])
+    #ALU signals
+    alu_control_out = Signal(intbv('1111')[4:])
     alu_out = Signal(intbv(0,  min=-(2**31), max=2**31-1)) 
     zero = Signal(bool(False))
 
-    #
+
+
+    
 
     #
     # component instances
     #
     pc = program_counter(clk, ip)
     im = instruction_memory (ip, instruction)
-    register_file_i = register_file(rs, rt, rd, data_in, RegWrite, data1, data2, depth=8)
+    
+    id = instruction_dec(instruction, opcode, rs, rt, rd, shamt, func, address)
+
+    mux_wreg = mux2(RegDst, wr_reg_in, rt, rd)
+    register_file_i = register_file(rs, rt, wr_reg_in, data_in, RegWrite, data1, data2, depth=32)
+    
     
     sign_extend_i = sign_extend(address, address32)
 
     alu_control_i = alu_control(ALUop, func, alu_control_out)
 
-    alu_i = ALU(alu_control_out, data1, data2, alu_out, zero)
+    mux_alu_src = mux2(ALUSrc, mux_alu_out, data2, address32)
+    alu_i = ALU(alu_control_out, data1, mux_alu_out, alu_out, zero)
 
 
     control_i = control(opcode, RegDst, Branch, MemRead, MemtoReg, ALUop, MemWrite, ALUSrc, RegWrite)
 
     
-    
-
-
-    @always_comb
-    def instruction_change():
-        opcode.next = instruction[32:26]
-        rs.next = instruction[26:21]    #- to read_reg_1
-        rt.next = instruction[21:16]         #- to read_reg_2 and mux controlled by RegDst
-        rd.next = instruction[16:11]         #- to the mux controlled by RegDst
-        shamt.next = instruction[11:6]   
-        func.next = instruction[6:0]         #- to ALUCtrl
-        address.next = instruction[16:0]     #- to Sign Extend
-
 
     if DEBUG:
         @always(clk.posedge)
@@ -98,10 +99,13 @@ def datapath(clk, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])):
             print "time: %s | Clock: %i | ip: %i" % (now(), clk, ip)
             print 'instruction', bin(instruction, 32) 
 
-            print 'opcode: %s | rs: %i | rt: %i | rd: %i | data1: %i | data2: %i' % \
-                  (bin(opcode, 6), rs, rt, rd, data1, data2)
+            print 'opcode %s | rs %i | rt %i | rd %i | shamt %i | func %i | address %i' % \
+                 (bin(opcode, 6), rs, rt, rd, shamt, func, address )
 
-            print 'Control lines:', RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch, bin(ALUop, 2)
+            print 'wr_reg_in %i | dat1 %i | dat2 %i | muxALUo %i ' % \
+                  (wr_reg_in, data1, data2, mux_alu_out)
+
+            print 'RegDst %i | ALUSrc %i | Mem2Reg %i | RegW %i | MemR %i | MemW %i | Branch %i | ALUop %s' % ( RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch, bin(ALUop, 2))
         
             print 'func: %s | aluop: %s | alu_c_out: %s' % ( bin(func, 5), 
                                                             bin(ALUop, 2), 
@@ -135,8 +139,21 @@ def testBench():
 
 def main():
     sim = Simulation(testBench())
-    sim.run(50)
+    sim.run(10)
 
 
 if __name__ == '__main__':
+
+    """
+    DATAPATH
+
+
+    problema detectado. La operacion add r0, r1, r2  representa la funcion 100100
+
+    """
+
+
     main()
+
+
+

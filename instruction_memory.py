@@ -10,14 +10,18 @@ from myhdl import Signal, delay, always_comb, now, Simulation, \
                   intbv, bin, instance, instances, toVHDL, toVerilog
 
 
+def load_program(ROM, program='prog.txt', comment_char='#' ):
+    index = 0
+    for line in open(program):
+        line = line.partition(comment_char)[0]
+        line = line.rstrip()
+        if len(line) == 32:
+            ROM[index] = int(line, 2)
+            index += 1 
 
-ROM = [0] * 32
-ROM[0:3] = [ int("01000000001000010000000000000001", 2),        #R1 = R1 + b'0001'
-             int("01000000010000100000000000000011", 2),        #R2 = R2 + b'0011'
-             int("00000000001000100100000000100000", 2),        #R3 = R1 + R2
-              ]
+    return tuple(ROM)
 
-ROM = tuple(ROM)
+ROM = load_program([0] * 32)
 
 def instruction_memory(address, instruction):
     """ 
