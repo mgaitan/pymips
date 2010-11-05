@@ -53,9 +53,9 @@ def ALU(control, op1, op2, out_, zero):
             out_.next =  op1 - op2
             
 
-        elif control == 7 : #int('0111',2):
-            #TODO: set on less than
-            out_.next = 0
+        elif control == 0b0111 : #int('0111',2):
+            
+            out_.next = op1 < op2
 
         elif control == 12 : #int('1100', 2):
             out_.next =  ~ (op1 | op2)   #TODO check this
@@ -88,7 +88,7 @@ def testBench_alu():
     alu_i = toVHDL(ALU, control_i, op1_i, op2_i, out_i, zero_i)
     #alu_i = analyze(alu, control_i, op1_i, op2_i, out_i, zero_i)
 
-    control_func = (('0000', 'AND'), ('0001', 'OR'),  ('0010', 'add'), ('0110', 'substract'), ('0111', 'set on <'), ('1100', 'NOR') )
+    control_func = (('0000', 'AND'), ('0001', 'OR'),  ('0010', 'add'), ('0110', 'substract'), ('0111', '<'), ('1100', 'NOR') )
 
     @instance
     def stimulus():
