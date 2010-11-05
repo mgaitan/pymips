@@ -15,6 +15,7 @@ from instruction_memory import instruction_memory
 from instruction_decoder import instruction_dec
 from alu import ALU
 from alu_control import alu_control
+from and_gate import and_gate
 from control import control
 from register_file import register_file
 from sign_extender import sign_extend
@@ -71,11 +72,11 @@ def datapath(clk_period=1, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])
     rd = Signal(intbv(0)[5:])       #instruction 15:11  - to the mux controlled by RegDst
     shamt = Signal(intbv(0)[5:])    #instruction 10:6   - 
     func = Signal(intbv(0)[6:])     #instruction 5:0    - to ALUCtrl
-    address = Signal(intbv(0)[16:]) #instruction 15:0   - to Sign Extend
+    address = Signal(intbv(0, min=-(2**15), max=2**15 - 1))   #instruction 15:0   - to Sign Extend
 
     wr_reg_in = Signal(intbv(0)[5:]) #output of mux_wreg (it's rt or rd depends on RegDst)
 
-    address32 = Signal(intbv(0)[32:]) #output of signextend
+    address32 = Signal(intbv(0, min=-(2**31), max=2**31-1)) #output of signextend
 
     #register file data vectors (input and outputs)
     data_in, data1, data2 = [Signal( intbv(0, min=-(2**31),max=2**31-1)) for i in range(3)]
@@ -106,7 +107,7 @@ def datapath(clk_period=1, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])
 
 
     branch_adder = ALU(Signal(0b0010), pc_adder_out, address32, branch_adder_out, Signal(0))
-    branch_and_gate = ALU(Signal(0), branchZ, Branch, zero, Signal(0))  
+    branch_and_gate = and_gate(Branch, zero, branchZ)  
     mux_branch = mux2(branchZ, next_ip, pc_adder_out, branch_adder_out)
 
 
@@ -136,7 +137,9 @@ def datapath(clk_period=1, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])
         @always(clk.posedge)
         def debug_internals():
             print "-" * 78
-            print "time %s | clk %i | clk_pc %i | ip %i" % (now(), clk, clk_pc, ip)
+            print "time %s | clk %i | clk_pc %i | ip %i " % (now(), clk, clk_pc, ip)
+
+            print 'pc_add_o %i | branch_add_o %i | BranchZ %i | next_ip %i' % (pc_adder_out, branch_adder_out, branchZ, next_ip)
             print 'instruction', bin(instruction, 32) 
 
             print 'opcode %s | rs %i | rt %i | rd %i | shamt %i | func %i | address %i' % \
@@ -152,6 +155,7 @@ def datapath(clk_period=1, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])
                                                             bin(alu_control_out, 4) )
 
             print 'ALU_out: %i | Zero: %i' % (alu_out, zero)
+
 
             print 'ram_out %i | mux_ram_out %i ' % (ram_out, mux_ram_out)
             
@@ -177,7 +181,7 @@ def testBench():
 
 def main():
     sim = Simulation(testBench())
-    sim.run(16)
+    sim.run(20)
 
 
 if __name__ == '__main__':

@@ -22,7 +22,7 @@ def program_counter(clk, input, output):
     output: address output
     """
 
-    @always(clk.negedge)
+    @always(clk.posedge)
     def update():        
         output.next = input
 

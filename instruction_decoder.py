@@ -35,7 +35,7 @@ def instruction_dec(instruction, opcode, rs, rt, rd, shamt, func, address):
         rd.next = instruction[16:11]         #- to the mux controlled by RegDst
         shamt.next = instruction[11:6]   
         func.next = instruction[6:0]         #- to ALUCtrl
-        address.next = instruction[16:0]     #- to Sign Extend
+        address.next = instruction[16:0].signed()     #- to Sign Extend
 
     return decode
 
