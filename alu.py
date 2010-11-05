@@ -46,7 +46,7 @@ def ALU(control, op1, op2, out_, zero):
         elif control == 1 : #int('0001',2):
             out_.next =  op1 | op2
 
-        elif control == 3 : #int('0010',2):
+        elif control == 2 : #int('0010',2):
             out_.next =  op1 + op2           #what happend if there is overflow ?
        
         elif control == 6 : # int('0110',2):
