@@ -28,8 +28,10 @@ DEBUG = True  #set to false to convert
 def datapath(clk_period=1, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])):
 
     ##############################
+    #
     # clock settings
     #
+    ##############################
 
     clk = Signal(intbv(0)[1:])     #internal clock
     clk_pc = Signal(intbv(0)[1:])  #frec should be almost 1/4 clk internal
@@ -38,18 +40,26 @@ def datapath(clk_period=1, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])
     clk_driver_pc = clock_driver(clk_pc, clk_period * 4)
 
     ##############################
+    #
     #   internal signals
     #
+    ##############################
     
-    #program counter
-    ip = Signal(intbv(0)[16:] ) #connect PC with intruction_memory
-    next_ip =  Signal(intbv(0)[16:] )   #output of pc_adder - input of pc
+    #program counter and branch signals
+    ip = Signal(intbv(0)[32:] ) #connect PC with intruction_memory
+    pc_adder_out =  Signal(intbv(0)[32:] )   #output of pc_adder - input0 branch_adder and mux_branch
+    next_ip =  Signal(intbv(0)[32:] )   #output of mux_branch - input of pc
+
+
+    branch_adder_out = Signal(intbv(0)[32:])
+    branchZ = Signal(intbv(0)[1:]) #control of mux_branch 
+    
 
     instruction = Signal(intbv(0)[32:])   #32 bits instruction line.
 
     #control signals
-    signal_1bit = [Signal(intbv(0)[1:]) for i in range(7)]
-    RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch = signal_1bit     
+    signals_1bit = [Signal(intbv(0)[1:]) for i in range(7)]
+    RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch = signals_1bit     
     
     #ALUop connect Control with ALUcontrol
     ALUop = Signal(intbv(0)[2:])  
@@ -76,20 +86,29 @@ def datapath(clk_period=1, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])
     #ALU signals    
     alu_control_out = Signal(intbv('1111')[4:])
     alu_out = Signal(intbv(0,  min=-(2**31), max=2**31-1)) 
-    zero = Signal(bool(False))
+    zero = Signal(intbv(0)[1:])
     
     #data memory signal
     ram_out = Signal(intbv(0, min=-(2**31), max=2**31-1))
     mux_ram_out = Signal(intbv(0, min=-(2**31), max=2**31-1))
 
     ##############################
+    #
     # component instances
     #
- 
+    ##############################
+
+    #program counter
+
     pc = program_counter(clk_pc, next_ip, ip)
     increment = 1   #it's 4 in the book, but my memory it's organized in 32bits words, not bytes
+    pc_adder = ALU(Signal(0b0010), ip, Signal(increment), pc_adder_out, Signal(0))     #hardwire an ALU to works as an adder
 
-    pc_adder = ALU(Signal(0b0010), ip, Signal(increment), next_ip, Signal(0))     #hardwire an ALU to works as an adder
+
+    branch_adder = ALU(Signal(0b0010), pc_adder_out, address32, branch_adder_out, Signal(0))
+    branch_and_gate = ALU(Signal(0), branchZ, Branch, zero, Signal(0))  
+    mux_branch = mux2(branchZ, next_ip, pc_adder_out, branch_adder_out)
+
 
     im = instruction_memory ( ip, instruction)
     

@@ -37,7 +37,7 @@ def data_memory(clk, address, write_data, read_data, memread, memwrite ):
         elif memread == 1:
             read_data.next = mem[int(address)]
 
-        print [int(i) for i in mem][0:20]
+        #print [int(i) for i in mem][0:20]
 
     return logic
 
