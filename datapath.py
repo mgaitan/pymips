@@ -70,7 +70,7 @@ def datapath(clk_period=1, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])
     mux_alu_out = Signal( intbv(0, min=-(2**31),max=2**31-1)) #output of mux_alu_src 
                                                               #(data2 or address32 depends on ALUSrc)
 
-    #ALU signals
+    #ALU signals    
     alu_control_out = Signal(intbv('1111')[4:])
     alu_out = Signal(intbv(0,  min=-(2**31), max=2**31-1)) 
     zero = Signal(bool(False))
@@ -101,7 +101,7 @@ def datapath(clk_period=1, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])
     mux_alu_src = mux2(ALUSrc, mux_alu_out, data2, address32)
     alu_i = ALU(alu_control_out, data1, mux_alu_out, alu_out, zero)
 
-    data_memory_i = data_memory(alu_out, data2, ram_out, MemRead, MemWrite)
+    data_memory_i = data_memory(clk,    alu_out, data2, ram_out, MemRead, MemWrite)
     
     mux_mem2reg = mux2(MemtoReg, mux_ram_out, alu_out, ram_out)
     

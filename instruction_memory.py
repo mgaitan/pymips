@@ -14,7 +14,7 @@ def load_program(ROM, program='prog.txt', comment_char='#' ):
     index = 0
     for line in open(program):
         line = line.partition(comment_char)[0]
-        line = line.rstrip()
+        line = line.replace(' ', '')
         if len(line) == 32:
             ROM[index] = int(line, 2)
             index += 1 
