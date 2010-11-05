@@ -9,8 +9,8 @@ Datapath
 from myhdl import Signal, delay, always, always_comb, now, Simulation, \
                   intbv, bin, instance, instances, now, toVHDL
 
-
-from program_counter import ClkDriver, program_counter
+from clock_driver import clock_driver
+from program_counter import program_counter
 from instruction_memory import instruction_memory
 from instruction_decoder import instruction_dec
 from alu import ALU
@@ -20,16 +20,27 @@ from register_file import register_file
 from sign_extender import sign_extend
 from mux import mux2, mux4
 
+from data_memory import data_memory
+
 DEBUG = True  #set to false to convert 
 
 
-def datapath(clk, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])):
+def datapath(clk_period=1, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])):
 
-
+    ##############################
+    # clock settings
     #
+
+    clk = Signal(intbv(0)[1:])     #internal clock
+    clk_pc = Signal(intbv(0)[1:])  #frec should be almost 1/4 clk internal
+
+    clk_driver = clock_driver(clk, clk_period)
+    clk_driver_pc = clock_driver(clk_pc, clk_period * 4)
+
+    ##############################
     #   internal signals
     #
-
+    
     ip = Signal(intbv(0)[16:] ) #connect PC with intruction_memory
     instruction = Signal(intbv(0)[32:])   #32 bits instruction line.
 
@@ -63,21 +74,24 @@ def datapath(clk, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])):
     alu_control_out = Signal(intbv('1111')[4:])
     alu_out = Signal(intbv(0,  min=-(2**31), max=2**31-1)) 
     zero = Signal(bool(False))
-
-
-
     
+    #data memory signal
+    ram_out = Signal(intbv(0, min=-(2**31), max=2**31-1))
+    mux_ram_out = Signal(intbv(0, min=-(2**31), max=2**31-1))
 
-    #
+    ##############################
     # component instances
     #
-    pc = program_counter(clk, ip)
-    im = instruction_memory (ip, instruction)
+
+    pc = program_counter(clk_pc, ip)
+    im = instruction_memory ( ip, instruction)
     
     id = instruction_dec(instruction, opcode, rs, rt, rd, shamt, func, address)
 
+    control_i = control(opcode, RegDst, Branch, MemRead, MemtoReg, ALUop, MemWrite, ALUSrc, RegWrite)
+
     mux_wreg = mux2(RegDst, wr_reg_in, rt, rd)
-    register_file_i = register_file(rs, rt, wr_reg_in, data_in, RegWrite, data1, data2, depth=32)
+    register_file_i = register_file(clk, rs, rt, wr_reg_in, mux_ram_out, RegWrite, data1, data2, depth=32)
     
     
     sign_extend_i = sign_extend(address, address32)
@@ -87,16 +101,16 @@ def datapath(clk, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])):
     mux_alu_src = mux2(ALUSrc, mux_alu_out, data2, address32)
     alu_i = ALU(alu_control_out, data1, mux_alu_out, alu_out, zero)
 
-
-    control_i = control(opcode, RegDst, Branch, MemRead, MemtoReg, ALUop, MemWrite, ALUSrc, RegWrite)
-
+    data_memory_i = data_memory(alu_out, data2, ram_out, MemRead, MemWrite)
+    
+    mux_mem2reg = mux2(MemtoReg, mux_ram_out, alu_out, ram_out)
     
 
     if DEBUG:
         @always(clk.posedge)
         def debug_internals():
             print "-" * 78
-            print "time: %s | Clock: %i | ip: %i" % (now(), clk, ip)
+            print "time %s | clk %i | clk_pc %i | ip %i" % (now(), clk, clk_pc, ip)
             print 'instruction', bin(instruction, 32) 
 
             print 'opcode %s | rs %i | rt %i | rd %i | shamt %i | func %i | address %i' % \
@@ -113,6 +127,7 @@ def datapath(clk, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])):
 
             print 'ALU_out: %i | Zero: %i' % (alu_out, zero)
 
+            print 'ram_out %i | mux_ram_out %i ' % (ram_out, mux_ram_out)
             
             
 
@@ -122,14 +137,11 @@ def datapath(clk, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])):
 
 def testBench():
 
-    clk = Signal(intbv(0)[1:])
-    clkdriver_inst = ClkDriver(clk)
-
 
     if not DEBUG:
-        datapath_i = toVHDL(datapath, clk)
+        datapath_i = toVHDL(datapath)
     else:
-        datapath_i = datapath(clk)
+        datapath_i = datapath()
 
     
 
