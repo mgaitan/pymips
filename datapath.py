@@ -41,7 +41,10 @@ def datapath(clk_period=1, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])
     #   internal signals
     #
     
+    #program counter
     ip = Signal(intbv(0)[16:] ) #connect PC with intruction_memory
+    next_ip =  Signal(intbv(0)[16:] )   #output of pc_adder - input of pc
+
     instruction = Signal(intbv(0)[32:])   #32 bits instruction line.
 
     #control signals
@@ -82,8 +85,12 @@ def datapath(clk_period=1, reset=Signal(intbv(0)[1:]), zero=Signal(intbv(0)[1:])
     ##############################
     # component instances
     #
+ 
+    pc = program_counter(clk_pc, next_ip, ip)
+    increment = 1   #it's 4 in the book, but my memory it's organized in 32bits words, not bytes
 
-    pc = program_counter(clk_pc, ip)
+    pc_adder = ALU(Signal(0b0010), ip, Signal(increment), next_ip, Signal(0))     #hardwire an ALU to works as an adder
+
     im = instruction_memory ( ip, instruction)
     
     id = instruction_dec(instruction, opcode, rs, rt, rd, shamt, func, address)
@@ -151,7 +158,7 @@ def testBench():
 
 def main():
     sim = Simulation(testBench())
-    sim.run(10)
+    sim.run(16)
 
 
 if __name__ == '__main__':
