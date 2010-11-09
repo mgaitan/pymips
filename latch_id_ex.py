@@ -17,11 +17,13 @@ from myhdl import Signal, delay, always_comb, always, Simulation, \
 def latch_id_ex(clk, rst, 
                 pc_adder_in, 
                 data1_in, data2_in, address32_in, 
+                rd_in, rt_in, func_in,
                 RegDst_in, ALUop_in, ALUSrc_in,     #signals to EX pipeline stage
                 Branch_in, MemRead_in, MemWrite_in,  #signals to MEM pipeline stage
                 RegWrite_in, MemtoReg_in,     #signals to WB pipeline stage
                 pc_adder_out, 
                 data1_out, data2_out, address32_out,
+                rd_out, rt_out, func_out,
                 RegDst_out, ALUop_out, ALUSrc_out,     
                 Branch_out, MemRead_out, MemWrite_out, 
                 RegWrite_out, MemtoReg_out,     
@@ -39,6 +41,11 @@ def latch_id_ex(clk, rst,
             data1_out.next = 0
             data2_out.next = 0
             address32_out.next = 0
+            rt_out.next = 0
+            rd_out.next = 0
+            func_out.next = 0
+
+            #control lines
             RegDst_out.next = 0
             ALUop_out.next = 0
             ALUSrc_out.next = 0
@@ -52,6 +59,11 @@ def latch_id_ex(clk, rst,
             data1_out.next = data1_in.signed()
             data2_out.next = data2_in.signed()
             address32_out.next = address32_in.signed()
+
+            rt_out.next = rt_in
+            rd_out.next = rd_in
+            func_out.next = func_in
+
             RegDst_out.next = RegDst_in
             ALUop_out.next = ALUop_in
             ALUSrc_out.next = ALUSrc_in
@@ -69,6 +81,9 @@ def testBench():
     pc_adder_in, data1_in, data2_in, address32_in = [Signal(intbv(random.randint(-255, 255), min=-(2**31), max=2**31-1)) for i in range(4)]
     pc_adder_out, data1_out, data2_out, address32_out = [Signal(intbv(0, min=-(2**31), max=2**31-1)) for i in range(4)]
 
+    rd_in, rt_in, rd_out, rt_out = [Signal(intbv(0)[5:]) for i in range(4)]
+    func_in, func_out = [Signal(intbv(0)[6:]) for i in range(2)]
+
     RegDst_in, ALUop_in, ALUSrc_in = [Signal(intbv(0)[1:]) for i in range(3)]   
     Branch_in, MemRead_in, MemWrite_in = [Signal(intbv(0)[1:]) for i in range(3)] 
     RegWrite_in, MemtoReg_in = [Signal(intbv(0)[1:]) for i in range(2)]
@@ -83,11 +98,13 @@ def testBench():
     latch_inst = toVHDL(latch_id_ex, clk, rst,
                                 pc_adder_in, 
                                 data1_in, data2_in, address32_in,
+                                rd_in, rt_in, func_in,
                                 RegDst_in, ALUop_in, ALUSrc_in,     #signals to EX pipeline stage
                                 Branch_in, MemRead_in, MemWrite_in,  #signals to MEM pipeline stage
                                 RegWrite_in, MemtoReg_in,     #signals to WB pipeline stage
                                 pc_adder_out, 
                                 data1_out, data2_out, address32_out,
+                                rd_out, rt_out, func_out, 
                                 RegDst_out, ALUop_out, ALUSrc_out,     
                                 Branch_out, MemRead_out, MemWrite_out, 
                                 RegWrite_out, MemtoReg_out)    
@@ -100,7 +117,9 @@ def testBench():
             if random.random() > 0.75:
                 rst.next = 1
             
-            pc_adder_in.next, data1_in.next, data2_in.next, address32_in.next = [Signal(intbv(random.randint(-255, 255), min=-(2**31), max=2**31-1)) for i in range(4)]
+            pc_adder_in.next, data1_in.next, data2_in.next, address32_in.next = [intbv(random.randint(-255, 255)) for i in range(4)]
+
+            rd_in.next, rt_in.next, func_in.next = [intbv(random.randint(0, 15)) for i in range(3)]
 
             RegDst_in.next, ALUop_in.next, ALUSrc_in.next = [random.randint(0,1) for i in range(3)]
             Branch_in.next , MemRead_in.next , MemWrite_in.next  = [random.randint(0,1) for i in range(3)]
@@ -108,12 +127,15 @@ def testBench():
 
             yield delay(1)
             print "-" * 79
-            print "32bits  in  %i %i %i | 1bit inputs  %i  %i  %i  %i  %i  %i  %i  %i " % ( data1_in, data2_in, address32_in, RegDst_in, ALUop_in, ALUSrc_in,     
+            print "%i %i %i | %i %i %i  | %i  %i  %i  %i  %i  %i  %i  %i " % ( data1_in, data2_in, address32_in, 
+                                                                                rd_in, rt_in, func_in, 
+                                                                                RegDst_in, ALUop_in, ALUSrc_in,     
                                                                                                 Branch_in, MemRead_in, MemWrite_in, 
                                                                                                 RegWrite_in, MemtoReg_in)
             print "clk: %i  rst: %i " % (clk, rst)
 
-            print "32bits out  %i %i %i | 1bit outputs  %i  %i  %i  %i  %i  %i  %i  %i " % ( data1_out, data2_out, address32_out, RegDst_out, ALUop_out, ALUSrc_out,     
+            print "%i %i %i | %i %i %i | %i  %i  %i  %i  %i  %i  %i  %i " % ( data1_out, data2_out, address32_out, 
+                                                                        rd_out, rt_out, func_out, RegDst_out, ALUop_out, ALUSrc_out,     
                                                                                                 Branch_out, MemRead_out, MemWrite_out, 
                                                                                                 RegWrite_out, MemtoReg_out)
 
