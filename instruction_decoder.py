@@ -30,7 +30,7 @@ def instruction_dec(instruction, opcode, rs, rt, rd, shamt, func, address):
     @always_comb
     def decode():
         opcode.next = instruction[32:26]
-        rs.next = instruction[26:21]    #- to read_reg_1
+        rs.next = instruction[26:21]         #- to read_reg_1
         rt.next = instruction[21:16]         #- to read_reg_2 and mux controlled by RegDst
         rd.next = instruction[16:11]         #- to the mux controlled by RegDst
         shamt.next = instruction[11:6]   
@@ -41,8 +41,8 @@ def instruction_dec(instruction, opcode, rs, rt, rd, shamt, func, address):
 
 
 def testBench():
-
     pass
+    
 
 
 def main():

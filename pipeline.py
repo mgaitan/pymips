@@ -7,7 +7,7 @@ Datapath
 """
 
 from myhdl import Signal, delay, always, always_comb, now, Simulation, \
-                  intbv, bin, instance, instances, now, toVHDL
+                  intbv, bin, instance, instances, now, toVHDL, traceSignals
 
 from clock_driver import clock_driver
 from program_counter import program_counter
@@ -27,7 +27,7 @@ from latch_id_ex import latch_id_ex
 from latch_ex_mem import latch_ex_mem
 from latch_mem_wb import latch_mem_wb
 
-DEBUG = False #True  #set to false to convert 
+DEBUG = True  #set to false to convert 
 
 
 
@@ -137,7 +137,7 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
     instruction_decoder_ = instruction_dec(Instruction_id, Opcode_id, Rs_id, Rt_id, Rd_id, Shamt_id, Func_id, Address16_id)
 
     #sign extend
-    Address32_id = Signal(intbv(0, min=MIN, max=MAX)[32:]) 
+    Address32_id = Signal(intbv(0, min=MIN, max=MAX)) 
 
     sign_extend_ = sign_extend(Address16_id, Address32_id)
 
@@ -180,7 +180,7 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
     #Shamt_ex = Signal(intbv(0)[5:])    #instruction 10:6   - 
     Func_ex = Signal(intbv(0)[6:])     #instruction 5:0    - to ALUCtrl
     
-    Address32_ex = Signal(intbv(0, min=MIN, max=MAX)[32:]) 
+    Address32_ex = Signal(intbv(0, min=MIN, max=MAX)) 
 
     
     latch_id_ex_ = latch_id_ex(Clk, Reset, 
@@ -209,10 +209,10 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
     BranchAdderO_ex = Signal(intbv(0, min=MIN, max=MAX)[32:])
 
     Zero_ex = Signal(intbv(0)[1:])
-    AluResult_ex = Signal(intbv(0, min=MIN, max=MAX)[32:])
+    AluResult_ex = Signal(intbv(0, min=MIN, max=MAX))
 
 
-    MuxAluDataSrc_ex = Signal(intbv(0, min=MIN, max=MAX)[32:])
+    MuxAluDataSrc_ex = Signal(intbv(0, min=MIN, max=MAX))
 
     WrRegDest_ex = Signal(intbv(0)[32:])
     
@@ -230,19 +230,19 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
     alu_ = ALU(AluControl, Data1_ex, MuxAluDataSrc_ex, AluResult_ex, Zero_ex)
 
     #Mux RegDestiny Control Write register between rt and rd. 
-    mux_wreg = mux2(RegDst_ex, WrRegDest_wb, Rt_ex, Rd_ex)
+    mux_wreg = mux2(RegDst_ex, WrRegDest_ex, Rt_ex, Rd_ex)
 
     
     ##############################
     # EX/MEM
     ##############################
 
-    BranchAdderO_mem = Signal(intbv(0, min=MIN, max=MAX)[32:])
+    BranchAdderO_mem = Signal(intbv(0, min=MIN, max=MAX))
 
     Zero_mem = Signal(intbv(0)[1:])
-    AluResult_mem = Signal(intbv(0, min=MIN, max=MAX)[32:])
+    AluResult_mem = Signal(intbv(0, min=MIN, max=MAX))
 
-    Data2_mem =  Signal(intbv(0, min=MIN, max=MAX)[32:])
+    Data2_mem =  Signal(intbv(0, min=MIN, max=MAX))
 
     WrRegDest_mem = Signal(intbv(0)[32:])
 
@@ -288,7 +288,7 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
     MemtoReg_wb = Signal(intbv(0)[1:])
     
     DataMemOut_wb = Signal(intbv(0, min=MIN, max=MAX)[32:])
-    AluResult_wb = Signal(intbv(0, min=MIN, max=MAX)[32:])
+    AluResult_wb = Signal(intbv(0, min=MIN, max=MAX))
 
 
     #WrRegDest_wb on feedback signals sections. 
@@ -316,32 +316,74 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
                     
 
     if DEBUG:
-        @always(clk.posedge)
+        @always(Clk.posedge)
         def debug_internals():
-            print "-" * 78
-            print "time %s | clk %i | clk_pc %i | ip %i " % (now(), clk, clk_pc, ip)
+            sep =  "\n" + "=" * 34 + " time %s " + "=" * 34 
+            print sep % now()
+            #IF
+            print "\n" +  "." * 35 + " IF " + "." * 35 + "\n"
+            print "PcAdderOut_if %i | BranchAdderO_mem %i | PCSrc_mem %i | NextIp %i | Ip %i"  % (PcAdderOut_if, BranchAdderO_mem, PCSrc_mem, NextIp, Ip)
+            print 'Instruction_if %s (%i)' %  (bin(Instruction_if, 32), Instruction_if)
 
-            print 'pc_add_o %i | branch_add_o %i | BranchZ %i | next_ip %i' % (pc_adder_out, branch_adder_out, branchZ, next_ip)
-            print 'instruction', bin(instruction, 32) 
+            if now () > 2:
 
-            print 'opcode %s | rs %i | rt %i | rd %i | shamt %i | func %i | address %i' % \
-                 (bin(opcode, 6), rs, rt, rd, shamt, func, address )
+                #ID
+                print "\n" + "." * 35 + " ID " + "." * 35 + "\n"
+                print "PcAdderO_id %i | Instruction_id %s (%i) "  % (PcAdderOut_id, bin(Instruction_id, 32), Instruction_id )
+                print 'Op %s | Rs %i | Rt %i | Rd %i | Func %i | Addr16 %i | Addr32 %i' % \
+                        (bin(Opcode_id, 6), Rs_id, Rt_id, Rd_id, Func_id, Address16_id, Address32_id )
+                
+                print 'Data1 %i | Data2 %i' % (Data1_id, Data2_id)
+                print '-->CONTROL'
+                print 'RegDst %i  ALUop %s  ALUSrc %i | Branch %i  MemR %i  MemW %i |  RegW %i Mem2Reg %i ' % \
+                        ( RegDst_id , bin(ALUop_id, 2), ALUSrc_id, Branch_id, MemRead_id, MemWrite_id, RegWrite_id, MemtoReg_id)
 
-            print 'wr_reg_in %i | dat1 %i | dat2 %i | muxALUo %i ' % \
-                  (wr_reg_in, data1, data2, mux_alu_out)
+            if now () > 4:
 
-            print 'RegDst %i | ALUSrc %i | Mem2Reg %i | RegW %i | MemR %i | MemW %i | Branch %i | ALUop %s' % ( RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch, bin(ALUop, 2))
-        
-            print 'func: %s | aluop: %s | alu_c_out: %s' % ( bin(func, 5), 
-                                                            bin(ALUop, 2), 
-                                                            bin(alu_control_out, 4) )
+                #EX
+                print "\n" + "." * 35 + " EX " + "." * 35 + "\n"
 
-            print 'ALU_out: %i | Zero: %i' % (alu_out, zero)
+                print "PcAdderO_ex %i | BranchAdderO_ex %i "  % (PcAdderOut_ex, BranchAdderO_ex)
+                print "Rs %i | Rt %i | Rd %i | Func %i | Addr32 %i" % (Rs_ex, Rt_ex, Rd_ex, Func_ex, Address32_ex )
+                
+                print 'Data1_ex %i | Data2_ex %i' % (Data1_ex, Data2_ex)
+                print '-->CONTROL'
+                print 'RegDst %i  ALUop %s  ALUSrc %i | Branch %i  MemR %i  MemW %i |  RegW %i Mem2Reg %i ' % \
+                        ( RegDst_ex , bin(ALUop_ex, 2), ALUSrc_ex, Branch_ex, MemRead_ex, MemWrite_ex, RegWrite_ex, MemtoReg_ex)
+                
+                print '--> ALU'
+                print 'MuxAluDataSrc %i  | AluCtrl %s | AluResult_ex %i | Zero_ex %i'   % (MuxAluDataSrc_ex, bin(AluControl, 4), AluResult_ex, Zero_ex)
+                print 'WrRegDest_ex %i' % WrRegDest_ex
 
+            if now () > 6:
+    
+                #MEM
+                print "\n" + "." * 35 + "MEM " + "." * 35 + "\n"
+                print "BranchAdderO_mem %i "  % (BranchAdderO_mem)
+                
+                print '-->CONTROL'
+                print 'Branch %i  MemR %i  MemW %i |  RegW %i Mem2Reg %i ' % \
+                         ( Branch_mem, MemRead_mem, MemWrite_mem, RegWrite_mem, MemtoReg_mem)
 
-            print 'ram_out %i | mux_ram_out %i ' % (ram_out, mux_ram_out)
+                print '--> Branch'
+                print 'Branch_mem %i Zero %i | PCSrc_mem %i' % (Branch_mem, Zero_mem, PCSrc_mem)
+
+                print '--> Data mem'
+                print 'AluResult_mem %i | Data2_mem %i | DataMemOut_mem %i | MemW %i MemR %i' \
+                        % (AluResult_mem, Data2_mem, DataMemOut_mem, MemWrite_mem, MemRead_mem)
+
+                print 'WrRegDest_mem %i' % WrRegDest_mem
+            
+            if now() > 8: 
+                #WB
+                print "\n" + "." * 35 + "WB" + "." * 35 + "\n"
+                print 'CONTROL --> RegW %i Mem2Reg %i ' %  ( RegWrite_mem, MemtoReg_mem)
+                
+                print 'DataMemOut_wb %i | AluResult_wb %i | MuxMemO_wb %i ' % (DataMemOut_wb, AluResult_wb, MuxMemO_wb)
+                print 'WrRegDest_wb %i | MuxMemO_wb %i' % (WrRegDest_wb, MuxMemO_wb)
             
             
+            raw_input()         
 
     return instances()
 
@@ -351,7 +393,7 @@ def testBench():
 
 
     if not DEBUG:
-        datapath_i = pipeline() #toVHDL(datapath)
+        datapath_i = traceSignals(pipeline)  #() #toVHDL(datapath)
     else:
         datapath_i = pipeline()
 
@@ -363,7 +405,7 @@ def testBench():
 
 def main():
     sim = Simulation(testBench())
-    sim.run(10)
+    sim.run(13)
 
 
 if __name__ == '__main__':
