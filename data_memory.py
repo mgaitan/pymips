@@ -49,7 +49,7 @@ def testBench():
 
     address = Signal(intbv(0)[32:]) 
 
-    data_in, data_out = [Signal( intbv(0, min=-(2**31),max=2**31-1)) for i in range(2)]
+    data_in, data_out = [Signal( intbv(0, min=-(2**31),max=2**31-1)[32:]) for i in range(2)]
 
     clk = Signal(intbv(0)[1:])
     write_control = Signal(intbv(0)[1:])

@@ -18,7 +18,7 @@ def register_file (clk, read_reg1, read_reg2, write_reg, data_in, write_control,
     #print mem
 
 
-    @always(clk.posedge)
+    @always(clk.negedge)
     def logic():
 
         if write_control == 1:

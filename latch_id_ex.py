@@ -55,10 +55,10 @@ def latch_id_ex(clk, rst,
             RegWrite_out.next = 0
             MemtoReg_out.next = 0
         else:
-            pc_adder_out.next = pc_adder_in.signed()
-            data1_out.next = data1_in.signed()
-            data2_out.next = data2_in.signed()
-            address32_out.next = address32_in.signed()
+            pc_adder_out.next = pc_adder_in #.signed()
+            data1_out.next = data1_in #.signed()
+            data2_out.next = data2_in #.signed()
+            address32_out.next = address32_in #.signed()
 
             rt_out.next = rt_in
             rd_out.next = rd_in

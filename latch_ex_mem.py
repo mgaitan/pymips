@@ -46,11 +46,11 @@ def latch_ex_mem(clk, rst,
             RegWrite_out.next = 0
             MemtoReg_out.next = 0
         else:
-            branch_adder_out.next = branch_adder_in.signed()
-            alu_result_out.next = alu_result_in.signed()
+            branch_adder_out.next = branch_adder_in #.signed()
+            alu_result_out.next = alu_result_in #.signed()
             zero_out.next = zero_in
             data2_out.next = data2_in
-            wr_reg_out.next = wr_reg_in.signed()
+            wr_reg_out.next = wr_reg_in #.signed()
 
             Branch_out.next = Branch_in
             MemRead_out.next = MemRead_in

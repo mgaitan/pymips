@@ -14,6 +14,7 @@ from program_counter import program_counter
 from instruction_memory import instruction_memory
 from instruction_decoder import instruction_dec
 from alu import ALU
+
 from alu_control import alu_control
 from and_gate import and_gate
 from control import control
@@ -30,12 +31,15 @@ from latch_mem_wb import latch_mem_wb
 DEBUG = True  #set to false to convert 
 
 
+import random
 
 MIN = -(2**31)
 MAX = 2**31 - 1
 
 MIN_16 = -(2**15)
 MAX_16 = 2**15 - 1
+
+
 
 def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])):
 
@@ -271,7 +275,7 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
     ##############################
 
     DataMemOut_mem = Signal(intbv(0, min=MIN, max=MAX)[32:])
-    AluResult_ = Signal(intbv(0, min=MIN, max=MAX)[32:])
+    #AluResult_ = Signal(intbv(0, min=MIN, max=MAX)[32:])
     
     #branch AND gate
     branch_and_gate = and_gate(Branch_mem, Zero_mem, PCSrc_mem)  
@@ -288,7 +292,7 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
     MemtoReg_wb = Signal(intbv(0)[1:])
     
     DataMemOut_wb = Signal(intbv(0, min=MIN, max=MAX)[32:])
-    AluResult_wb = Signal(intbv(0, min=MIN, max=MAX))
+    AluResult_wb = Signal(intbv(0, min=MIN, max=MAX)[32:])
 
 
     #WrRegDest_wb on feedback signals sections. 
@@ -310,7 +314,7 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
     ##############################
     
 
-    mux_mem2reg_ = mux2(MemtoReg_wb, MuxMemO_wb, DataMemOut_wb, AluResult_wb)
+    mux_mem2reg_ = mux2(MemtoReg_wb, MuxMemO_wb, AluResult_wb, DataMemOut_wb)
 
 
                     
@@ -325,7 +329,7 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
             print "PcAdderOut_if %i | BranchAdderO_mem %i | PCSrc_mem %i | NextIp %i | Ip %i"  % (PcAdderOut_if, BranchAdderO_mem, PCSrc_mem, NextIp, Ip)
             print 'Instruction_if %s (%i)' %  (bin(Instruction_if, 32), Instruction_if)
 
-            if now () > 2:
+            if True: # now () > 2:
 
                 #ID
                 print "\n" + "." * 35 + " ID " + "." * 35 + "\n"
@@ -338,7 +342,7 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
                 print 'RegDst %i  ALUop %s  ALUSrc %i | Branch %i  MemR %i  MemW %i |  RegW %i Mem2Reg %i ' % \
                         ( RegDst_id , bin(ALUop_id, 2), ALUSrc_id, Branch_id, MemRead_id, MemWrite_id, RegWrite_id, MemtoReg_id)
 
-            if now () > 4:
+            if True: #if now () > 4:
 
                 #EX
                 print "\n" + "." * 35 + " EX " + "." * 35 + "\n"
@@ -355,7 +359,7 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
                 print 'MuxAluDataSrc %i  | AluCtrl %s | AluResult_ex %i | Zero_ex %i'   % (MuxAluDataSrc_ex, bin(AluControl, 4), AluResult_ex, Zero_ex)
                 print 'WrRegDest_ex %i' % WrRegDest_ex
 
-            if now () > 6:
+            if True: #if now () > 6:
     
                 #MEM
                 print "\n" + "." * 35 + "MEM " + "." * 35 + "\n"
@@ -374,7 +378,7 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
 
                 print 'WrRegDest_mem %i' % WrRegDest_mem
             
-            if now() > 8: 
+            if True: #if now() > 8: 
                 #WB
                 print "\n" + "." * 35 + "WB" + "." * 35 + "\n"
                 print 'CONTROL --> RegW %i Mem2Reg %i ' %  ( RegWrite_mem, MemtoReg_mem)
@@ -383,7 +387,7 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
                 print 'WrRegDest_wb %i | MuxMemO_wb %i' % (WrRegDest_wb, MuxMemO_wb)
             
             
-            raw_input()         
+                  
 
     return instances()
 

@@ -39,9 +39,9 @@ def latch_mem_wb(clk, rst,
             RegWrite_out.next = 0
             MemtoReg_out.next = 0
         else:
-            ram_out.next = ram_in.signed()
-            alu_result_out.next = alu_result_in.signed()
-            wr_reg_out.next = wr_reg_in.signed()
+            ram_out.next = ram_in #.signed()
+            alu_result_out.next = alu_result_in #.signed()
+            wr_reg_out.next = wr_reg_in #.signed()
             RegWrite_out.next = RegWrite_in
             MemtoReg_out.next = MemtoReg_in
 
