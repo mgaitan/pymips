@@ -22,7 +22,7 @@ def register_file (clk, read_reg1, read_reg2, write_reg, data_in, write_control,
     def logic():
 
         if write_control == 1:
-            mem[int(write_reg)].next = data_in.signed()
+            mem[int(write_reg)].next = data_in #.signed()
 
         out_data1.next = mem[int(read_reg1)]
         out_data2.next = mem[int(read_reg2)]
@@ -50,7 +50,7 @@ def testBench():
     
     depth = 32
 
-    clk = Signal(intbv(0)[1:])
+    clk = Signal(intbv(1)[1:])
     read_reg1, read_reg2, write_reg = [ Signal(intbv(0)[5:]) for i in range(3) ] 
 
     data_in, out_data1, out_data2 = [Signal( intbv(0, min=-(2**31) ,max=2**31-1)) for i in range(3)]
@@ -68,19 +68,19 @@ def testBench():
             data_in.next = intbv( value, min=-(2**31), max=2**31-1)
             write_reg.next = i
             write_control.next = 1
-            clk.next = 1
+            clk.next = 0
             print "Written: reg %i = %d" % ( i, value)
             yield delay(5)
             write_control.next = 0
-            clk.next = 0
+            clk.next = 1
             yield delay(5)
         
         #read
         for a, b in group(range(depth), 2):
             read_reg1.next, read_reg2.next = a, b
-            clk.next = 1
-            yield delay(5)
             clk.next = 0
+            yield delay(5)
+            clk.next = 1
             print "Read: reg %i = %d | reg %i = %d" % (read_reg1, out_data1, read_reg2, out_data2)
             yield delay(5)
     return instances()

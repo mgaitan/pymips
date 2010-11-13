@@ -87,7 +87,7 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
     PCSrc_mem   = Signal(intbv(0)[1:]) #control of mux for program_counter on IF stage - (branch or inmediante_next)    
 
     WrRegDest_wb = Signal(intbv(0)[32:])        #register pointer where MuxMemO_wb data will be stored.
-    MuxMemO_wb = Signal(intbv(0, min=MIN, max=MAX)[32:])    #data output from WB mux connected as Write Data input on Register File (ID stage)
+    MuxMemO_wb = Signal(intbv(0, min=MIN, max=MAX))    #data output from WB mux connected as Write Data input on Register File (ID stage)
 
     RegWrite_wb = Signal(intbv(0)[1:])
 
@@ -156,8 +156,8 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
     
 
     #REGISTER FILE
-    Data1_id =  Signal(intbv(0, min=MIN, max=MAX)[32:])
-    Data2_id =  Signal(intbv(0, min=MIN, max=MAX)[32:])
+    Data1_id =  Signal(intbv(0, min=MIN, max=MAX))
+    Data2_id =  Signal(intbv(0, min=MIN, max=MAX))
 
     register_file_i = register_file(Clk, Rs_id, Rt_id, WrRegDest_wb, MuxMemO_wb, RegWrite_wb, Data1_id, Data2_id, depth=32)
     
@@ -174,8 +174,8 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
 
     ALUop_ex = Signal(intbv(0)[2:])  
     
-    Data1_ex =  Signal(intbv(0, min=MIN, max=MAX)[32:])
-    Data2_ex =  Signal(intbv(0, min=MIN, max=MAX)[32:])
+    Data1_ex =  Signal(intbv(0, min=MIN, max=MAX))
+    Data2_ex =  Signal(intbv(0, min=MIN, max=MAX))
     
 
     Rs_ex = Signal(intbv(0)[5:])       #instruction 25:21  - to read_reg_1
@@ -274,7 +274,7 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
     # MEM
     ##############################
 
-    DataMemOut_mem = Signal(intbv(0, min=MIN, max=MAX)[32:])
+    DataMemOut_mem = Signal(intbv(0, min=MIN, max=MAX))
     #AluResult_ = Signal(intbv(0, min=MIN, max=MAX)[32:])
     
     #branch AND gate
@@ -291,8 +291,8 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
     #RegWrite_wb, on feedback signals section
     MemtoReg_wb = Signal(intbv(0)[1:])
     
-    DataMemOut_wb = Signal(intbv(0, min=MIN, max=MAX)[32:])
-    AluResult_wb = Signal(intbv(0, min=MIN, max=MAX)[32:])
+    DataMemOut_wb = Signal(intbv(0, min=MIN, max=MAX))
+    AluResult_wb = Signal(intbv(0, min=MIN, max=MAX))
 
 
     #WrRegDest_wb on feedback signals sections. 
@@ -313,6 +313,7 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
     # WB
     ##############################
     
+    #mux2(sel, mux_out, chan1, chan2):
 
     mux_mem2reg_ = mux2(MemtoReg_wb, MuxMemO_wb, AluResult_wb, DataMemOut_wb)
 

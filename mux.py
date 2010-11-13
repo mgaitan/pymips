@@ -70,7 +70,7 @@ def testBench():
     @instance
     def stimulus():
         while True:
-            S.next = Signal(intbv(random.randint(0, 4))[2:])
+            S.next = Signal(intbv(random.randint(0, 1))[1:])
             #I0.next , I1.next = [Signal(intbv(random.randint(0, 255))[32:]) for i in range(2)]
             I2.next, I3.next = [Signal(intbv(random.randint(0, 255))[32:]) for i in range(2)]
             #print "Inputs: %i %i %i %i | S: %i | Output: %i" % (I0, I1, I2, I3, S, O)
