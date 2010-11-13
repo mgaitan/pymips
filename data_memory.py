@@ -28,8 +28,9 @@ def data_memory(clk, address, write_data, read_data, memread, memwrite ):
 
     mem = [Signal(intbv(0, min=-(2**31), max=2**31-1)) for i in range(1024)]
 
+    mem[7] = Signal(intbv(51, min=-(2**31), max=2**31-1))
     
-    @always(clk.posedge)
+    @always(clk.negedge)
     def logic():
         if memwrite == 1:
             mem[int(address)].next = write_data.val
@@ -37,7 +38,7 @@ def data_memory(clk, address, write_data, read_data, memread, memwrite ):
         elif memread == 1:
             read_data.next = mem[int(address)]
 
-        #print [int(i) for i in mem][0:20]
+        print 'mem:', [int(i) for i in mem][0:20]
 
     return logic
 
