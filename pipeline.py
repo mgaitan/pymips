@@ -121,7 +121,9 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
 
     PcAdderOut_id =  Signal(intbv(0)[32:])
     Instruction_id = Signal(intbv(0)[32:])   
-    
+
+
+
     latch_if_id_ = latch_if_id(Clk, Reset, Instruction_if, PcAdderOut_if, Instruction_id, PcAdderOut_id)
 
 
@@ -138,7 +140,9 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
     Func_id = Signal(intbv(0)[6:])     #instruction 5:0    - to ALUCtrl
     Address16_id = Signal(intbv(0, min=-(2**15), max=2**15 - 1))   #instruction 15:0   - to Sign Extend
 
-    instruction_decoder_ = instruction_dec(Instruction_id, Opcode_id, Rs_id, Rt_id, Rd_id, Shamt_id, Func_id, Address16_id)
+    NopSignal = Signal(intbv(0)[1:])
+
+    instruction_decoder_ = instruction_dec(Instruction_id, Opcode_id, Rs_id, Rt_id, Rd_id, Shamt_id, Func_id, Address16_id, NopSignal)
 
     #sign extend
     Address32_id = Signal(intbv(0, min=MIN, max=MAX)) 
@@ -152,7 +156,7 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
     ALUop_id = Signal(intbv(0)[2:])  
     
     control_ = control(Opcode_id, RegDst_id, Branch_id, MemRead_id, 
-                        MemtoReg_id, ALUop_id, MemWrite_id, ALUSrc_id, RegWrite_id)
+                        MemtoReg_id, ALUop_id, MemWrite_id, ALUSrc_id, RegWrite_id, NopSignal)
     
 
     #REGISTER FILE
@@ -275,7 +279,6 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
     ##############################
 
     DataMemOut_mem = Signal(intbv(0, min=MIN, max=MAX))
-    #AluResult_ = Signal(intbv(0, min=MIN, max=MAX)[32:])
     
     #branch AND gate
     branch_and_gate = and_gate(Branch_mem, Zero_mem, PCSrc_mem)  
@@ -334,7 +337,7 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
 
                 #ID
                 print "\n" + "." * 35 + " ID " + "." * 35 + "\n"
-                print "PcAdderO_id %i | Instruction_id %s (%i) "  % (PcAdderOut_id, bin(Instruction_id, 32), Instruction_id )
+                print "PcAdderO_id %i | Instruction_id %s (%i) | Nop %i"  % (PcAdderOut_id, bin(Instruction_id, 32), Instruction_id, NopSignal )
                 print 'Op %s | Rs %i | Rt %i | Rd %i | Func %i | Addr16 %i | Addr32 %i' % \
                         (bin(Opcode_id, 6), Rs_id, Rt_id, Rd_id, Func_id, Address16_id, Address32_id )
                 

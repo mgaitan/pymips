@@ -12,7 +12,7 @@ from myhdl import Signal, delay, always_comb, always, Simulation, \
 
 
 
-def instruction_dec(instruction, opcode, rs, rt, rd, shamt, func, address):
+def instruction_dec(instruction, opcode, rs, rt, rd, shamt, func, address, NopSignal=Signal(intbv(0)[1:]) ):
     """
 
     Decode segments of 32bits encoded instruction
@@ -36,6 +36,12 @@ def instruction_dec(instruction, opcode, rs, rt, rd, shamt, func, address):
         shamt.next = instruction[11:6]   
         func.next = instruction[6:0]         #- to ALUCtrl
         address.next = instruction[16:0].signed()     #- to Sign Extend
+
+
+        if instruction == 0:
+            NopSignal.next = 1
+        else: 
+            NopSignal.next = 0
 
     return decode
 

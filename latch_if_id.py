@@ -14,7 +14,7 @@ from myhdl import Signal, delay, always_comb, always, Simulation, \
 
 
 
-def latch_if_id(clk, rst, instruction_in, pc_adder_in, instruction_out, pc_adder_out):
+def latch_if_id(clk, rst, instruction_in, pc_adder_in, instruction_out, pc_adder_out ):
     """
     Latch to control state between Instruction Fetch and Instruction Decoder
 
@@ -35,6 +35,7 @@ def latch_if_id(clk, rst, instruction_in, pc_adder_in, instruction_out, pc_adder
         else:
             instruction_out.next = instruction_in
             pc_adder_out.next = pc_adder_in
+
 
     return latch
 
