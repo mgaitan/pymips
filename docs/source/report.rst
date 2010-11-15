@@ -259,7 +259,7 @@ Unidad de control
 
               /----------------\
               |                |-> 'RegDst'
-      Instr >-|     Control    |-> 'Branch'
+     NopSig >-|     Control    |-> 'Branch'
               |                |-> 'MemRead'
      Opcode >-|                |-> 'MemtoReg'
               |                |-> 'ALUOp (2bits)'
@@ -268,7 +268,7 @@ Unidad de control
               |                |-> 'RegWrite'
               \----------------/
 
-La unidad de control es un componente combinacional que activa *flags* en 
+La unidad de control es un componente combinacional que activa *flags*, en 
 general para el control de multiplexores u otras unidades de control 
 secundarias. Cumple la siguiente tabla de verdad:
 
@@ -276,6 +276,104 @@ secundarias. Cumple la siguiente tabla de verdad:
 .. image:: img/control_table.png
    :width: 90%
                     
+Para satisfacer la detección de ``nop`` (instrucción ``0x00000``) se 
+incorporó como entrada una señal detectada en ID, que es ``1`` si toda la 
+instrucción es ``0``. En tal caso , la unidad de control pone todas sus 
+salidas a ``0``.
+
+La modificación  se debe a que el opcode ``00000`` es común para las 
+instrucciones R-type y algunas señales de 
+control se ponen a ``1`` causando efectos no deseados como la escritura en el 
+banco de registros.
+
+El código de implementación es el siguiente
+
+.. literalinclude:: ../../control.py
+   :pyobject: control
+
+El testbench desarrollado itera sobre distintas entradas de opcode: 
+
+
+.. literalinclude:: ../../control.py
+   :pyobject: testBench
+
+Cuyo salida estándar es la siguiente:
+
+.. program-output:: python /home/tin/facu/arq/project/control.py
+   :nostderr:
+
+Multiplexores
++++++++++++++
+
+Para seleccionar una u otra entrada en función de señales gestionadas por 
+unidades de control se utilizan multiplexores, en particular de 2x32 (2 
+canaes de 32 bits) y 4x32.
+
+.. aafig::
+    :aspect: 60
+    :scale: 150
+    :proportional:
+    :align: center
+
+            /-----\
+      Ch0 >-|     |
+            | MUX |-> Out
+      Ch1 >-|     |
+            \-----/
+               ^
+              Sel
+
+Si el selector es 0, la salida se conectará con el canal 0, y análogamente 
+si es 1 la salida será el canal 1. Para los multiplexores de 4 canales, el 
+selector en una señal de 2 bits. 
+
+.. literalinclude:: ../../mux.py
+   :pyobject: mux2
+
+El testbench genera entradas y selectores al azar e imprime la salida. Una 
+salida es la siguiente:
+
+
+.. program-output:: python /home/tin/facu/arq/project/mux.py
+   :nostderr:
+
+Banco de Registros
+++++++++++++++++++
+
+El DLX cuenta con un banco de 32 registros de propósito general. Tiene la 
+particularidad de que en un mismo ciclo puede leer 2 registros 
+simultáneamente (en el flanco de bajada) y escribir, si está habilitada la 
+correspondiente señal de escritura, 1 registro en el flanco de subida del 
+clock.
+
+.. aafig::
+    :aspect: 60
+    :scale: 150
+    :proportional:
+    :align: center
+    :textual:
+                
+                        RegWrite 
+                           v
+                           |
+                  +----------------+
+                  |                |-> ReadData1
+       ReadReg1 >-|    Register    |
+                  |     File       |-> ReadData2
+       ReadReg2 >-|                |
+                  |                |
+       WriteReg >-|                |
+                  |                |
+      WriteData >-|                |
+                  +----------------+
+                          ^
+                         Clk
+ALU
++++
+
+La unidad aritmético-lógica es la 
+
+
 
 Datapath
 --------
@@ -283,6 +381,9 @@ Datapath
 
  .. image:: img/datapath.png
     :width: 100 %
+
+
+
 
 
 Pipeline
