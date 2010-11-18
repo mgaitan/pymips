@@ -320,8 +320,16 @@ def pipeline(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])
 
     mux_mem2reg_ = mux2(MemtoReg_wb, MuxMemO_wb, AluResult_wb, DataMemOut_wb)
 
-
+    ##############################
+    # Forwarding unit
+    ##############################
                     
+    
+    ##############################
+    # hazard detection unit
+    ##############################
+    
+
 
     if DEBUG:
         @always(Clk.posedge)

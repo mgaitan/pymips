@@ -10,7 +10,7 @@ from myhdl import Signal, delay, always_comb, now, Simulation, \
                   intbv, bin, instance, instances, toVHDL, toVerilog
 
 
-def load_program(ROM, program='prog.txt', comment_char='#' ):
+def load_program(ROM, program='/home/tin/facu/arq/project/prog.txt', comment_char='#' ):
     index = 0
     for line in open(program):
         line = line.partition(comment_char)[0]

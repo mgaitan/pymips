@@ -11,11 +11,13 @@ from myhdl import Signal, delay, always_comb, always, Simulation, \
 
 
 
-def control(opcode, RegDst, Branch, MemRead, MemtoReg, ALUop, MemWrite, ALUSrc, RegWrite, NopSignal=Signal(intbv(0)[1:])):
+def control(opcode, RegDst, Branch, MemRead, MemtoReg, ALUop, 
+            MemWrite, ALUSrc, RegWrite, NopSignal=Signal(intbv(0)[1:])):
     """
     opcode -- 6bit opcode field from instruction
     RegDst, ALUSrc, MemtoReg -- 1bit signals to control multiplexors
-    RegWrite, MemRead, MemWrite -- 1bit signals to control reads and writes in registers and memory
+    RegWrite, MemRead, MemWrite -- 1bit signals to control reads and writes 
+                                   in registers and memory
     Branch -- 1bit signal to determining whether to possibly branch
     ALUop -- 2bit control signal for the ALU
     """

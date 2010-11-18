@@ -371,8 +371,190 @@ clock.
 ALU
 +++
 
-La unidad aritmético-lógica es la 
 
+.. aafig::
+    :aspect: 60
+    :scale: 150
+    :proportional:
+    :align: center
+    :textual:
+                
+                  
+                  +-------+
+                  |        \          
+          Data1 >-+         \ 
+                  +          \  
+                   \          +
+                    \         |
+                     \  ALU   |-> Result
+                     /        |    
+                    /         |-> Zero     
+                   /          +        
+                  +          /
+          Data2 >-+         /  
+                  |        / 
+                  +-------+        
+                     ^
+                    Control
+
+La unidad aritmético-lógica es la encargada de realizar las operaciones. 
+El operando de 32bits ``Data1`` recibe el dato del registro 1 (``Rs``) y ``Data2`` 
+puede ser tanto otro dato almacenado en un registro (``Rt``) o bien un valor 
+literal. Las operaciones que soporta esta implementación son las que se 
+detallan en la siguiente tabla. 
+
+.. image:: img/alu_op.png
+   :align: center
+ 
+La implementación es la siguiente: 
+
+.. literalinclude:: ../../alu.py
+   :pyobject: ALU
+
+El testbench genera inputs al azar e intera sobre los valores de gestión 
+válidos. La salida es la siguiente
+
+:: 
+
+    Control: 0000 | 252 AND 184 | 184 | z=0
+    Control: 0001 | 137 OR 175 | 175 | z=0
+    Control: 0010 | 113 add 148 | 261 | z=0
+    Control: 0110 | 77 substract 166 | -89 | z=0
+    Control: 0111 | 158 < 10 | 0 | z=1
+    Control: 1100 | 238 NOR 237 | -240 | z=0
+
+
+ALU Control
++++++++++++
+
+La unidad de control de ALU es un componente combinacional de control 
+secundario. Recibe una señal de 2 bits de la unidad de control y la función 
+codificada en los 6 bits menos significativos de la instrucción.  
+Genera la señal de control de 4 bits correspondiente para controlar la 
+operación de la ALU. 
+
+.. aafig::
+    :aspect: 60
+    :scale: 150
+    :proportional:
+    :align: center
+
+            /---------\
+    ALUop >-|         |
+            |   ALU   |-> AluControl (4bits)
+     Func >-| Control |    
+            \---------/
+               
+
+La tabla de verdad es la siguiente:
+
+.. image:: img/alu_control.png
+   :align: center
+
+La implementación es la siguiente: 
+
+.. literalinclude:: ../../alu_control.py
+   :pyobject: alu_control
+
+El testbench se codificó de la siguiente manera:
+
+.. literalinclude:: ../../alu_control.py
+   :pyobject: testBench_alu_control
+
+
+Sign Extender
++++++++++++++
+
+El extensor de signo convierte un dirección (offset) o un literal codificado 
+en 16 bits (bits 15 a 0 de la instrucción) en un entero de igual valor pero 
+representado en 32 bits, lo que permite usarlo como operador en la ALU o en 
+el sumador para saltos condicionales. 
+
+
+.. aafig::
+    :aspect: 60
+    :scale: 150
+    :proportional:
+    :align: center
+
+            +------------+
+            |            |
+     IN16 >-|   Sign     |-> Out32
+            |  Extender  |
+            |            |
+            +------------+
+
+
+.. literalinclude:: ../../sign_extender.py
+   :pyobject: sign_extender
+
+Se muestra tambien la conversión a VHDL
+
+.. literalinclude:: ../../vhdl/sign_extender.vhd
+    :lines: 12-
+
+El resulado del testbench es el siguiente: 
+
+.. program-output:: python /home/tin/facu/arq/project/sign_extender.py
+   :nostderr:
+
+
+Data Memory
++++++++++++
+
+La memoria de datos (RAM) permite almacenar y recuperar información. En el 
+MIPS y derivados, sólo se interactua con este dispositivo a través de las 
+operaciones ``store`` y ``load``. 
+
+.. aafig::
+    :aspect: 60
+    :scale: 150
+    :proportional:
+    :align: center
+    :textual:
+                
+                        MemWrite 
+                           v
+                  +--------+-------+
+                  |                +-> ReadData
+        Address >-+     'Data'     |
+                  |    'Memory'    |
+      WriteData >-+                |
+                  |                |
+                  +--+-------+-----+
+                     ^       ^
+                    Clk    MemRead  
+
+En cierta forma funciona similar al banco de registros, pero se lee una 
+dirección a la vez y existen señales de habilitación tanto para escritura 
+como para lectura. La lectura o la escritura se produce en el flanco de bajada 
+de la señal de clock, teniendo prioridad la escritura, siempre y cuando las 
+correspondientes señales estén en ``1``. 
+
+La implementación es la siguiente
+
+
+.. literalinclude:: ../../data_memory.py
+   :pyobject: data_memory
+
+
+La conversión a código VHDL se detalla a continuación:
+
+.. literalinclude:: ../../vhdl/data_memory.vhd
+    :lines: 12-
+
+
+El testbench realiza escrituras de valores al azar (enteros con signo de 32 
+bits) en 5 direcciones aleatorias. Luego realiza la lectura de esas 
+direcciones. Se codificó de la siguiente manera:
+
+.. literalinclude:: ../../data_memory.py
+   :pyobject: testBench
+
+y resultado se lista a continuación:
+
+.. program-output:: python /home/tin/facu/arq/project/data_memory.py
+   :nostderr:
 
 
 Datapath
@@ -381,7 +563,6 @@ Datapath
 
  .. image:: img/datapath.png
     :width: 100 %
-
 
 
 
