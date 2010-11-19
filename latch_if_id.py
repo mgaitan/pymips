@@ -14,7 +14,7 @@ from myhdl import Signal, delay, always_comb, always, Simulation, \
 
 
 
-def latch_if_id(clk, rst, instruction_in, pc_adder_in, instruction_out, pc_adder_out ):
+def latch_if_id(clk, rst, instruction_in, pc_adder_in, instruction_out, pc_adder_out, stall=Signal(intbv(0)[1:]) ):
     """
     Latch to control state between Instruction Fetch and Instruction Decoder
 
@@ -24,6 +24,8 @@ def latch_if_id(clk, rst, instruction_in, pc_adder_in, instruction_out, pc_adder
     pc_adder_in -- 32 bits signal input
     instruction_out  -- 32 bits signal output for instruction decoder
     pc_adder_out -- 32 bits signal output for pc_add
+
+    stall -- inhibit the count increment
     """
 
     @always(clk.posedge, rst.posedge)
@@ -32,7 +34,8 @@ def latch_if_id(clk, rst, instruction_in, pc_adder_in, instruction_out, pc_adder
         if rst == 1:
             instruction_out.next = 0
             pc_adder_out.next = 0
-        else:
+        
+        elif not stall:
             instruction_out.next = instruction_in
             pc_adder_out.next = pc_adder_in
 

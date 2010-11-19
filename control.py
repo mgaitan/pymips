@@ -12,7 +12,7 @@ from myhdl import Signal, delay, always_comb, always, Simulation, \
 
 
 def control(opcode, RegDst, Branch, MemRead, MemtoReg, ALUop, 
-            MemWrite, ALUSrc, RegWrite, NopSignal=Signal(intbv(0)[1:])):
+            MemWrite, ALUSrc, RegWrite, NopSignal=Signal(intbv(0)[1:]), Stall=Signal(intbv(0)[1:])):
     """
     opcode -- 6bit opcode field from instruction
     RegDst, ALUSrc, MemtoReg -- 1bit signals to control multiplexors
@@ -24,7 +24,7 @@ def control(opcode, RegDst, Branch, MemRead, MemtoReg, ALUop,
 
     @always_comb
     def logic():
-        if NopSignal == 1:
+        if NopSignal == 1 or Stall == 1:
             RegDst.next = 0
             ALUSrc.next = 0
             MemtoReg.next = 0

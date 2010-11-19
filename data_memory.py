@@ -27,7 +27,7 @@ def data_memory(clk, address, write_data, read_data, memread, memwrite ):
 
     mem = [Signal(intbv(0, min=-(2**31), max=2**31-1)) for i in range(1024)]
 
-    #mem[7] = Signal(intbv(51, min=-(2**31), max=2**31-1))      #usefull to test load instruction directly
+    mem[7] = Signal(intbv(51, min=-(2**31), max=2**31-1))      #usefull to test load instruction directly
     
     @always(clk.negedge)
     def logic():

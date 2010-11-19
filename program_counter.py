@@ -14,7 +14,7 @@ from clock_driver import clock_driver
 
 from alu import ALU
 
-def program_counter(clk, input, output):
+def program_counter(clk, input, output, stall=Signal(intbv(0)[1:])):
     """
 
     clk : clock signal 
@@ -23,8 +23,9 @@ def program_counter(clk, input, output):
     """
 
     @always(clk.negedge)
-    def update():        
-        output.next = input
+    def update():
+        if not stall:
+            output.next = input
 
     return update
 

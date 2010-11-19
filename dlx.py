@@ -111,6 +111,10 @@ def dlx(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])):
             
     AluResult_mem = Signal(intbv(0, min=MIN, max=MAX))
 
+    Stall = Signal(intbv(0)[1:])  #when asserted the pipeline is stalled. It 'freezes' PC count 
+                                  #and put all Control Signals to 0's
+    
+
     ##############################
     # IF
     ##############################
@@ -123,7 +127,7 @@ def dlx(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])):
 
     #PC
     NextIp =  Signal(intbv(0)[32:] )   #output of mux_branch - input of pc
-    pc = program_counter(Clk, NextIp, Ip)
+    pc = program_counter(Clk, NextIp, Ip, Stall)
 
     #pc_adder
     INCREMENT = 1   #it's 4 in the book, but my instruction memory is organized in 32bits words, not in bytes
@@ -144,7 +148,7 @@ def dlx(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])):
 
 
 
-    latch_if_id_ = latch_if_id(Clk, Reset, Instruction_if, PcAdderOut_if, Instruction_id, PcAdderOut_id)
+    latch_if_id_ = latch_if_id(Clk, Reset, Instruction_if, PcAdderOut_if, Instruction_id, PcAdderOut_id, Stall)
 
 
     ##############################
@@ -176,7 +180,7 @@ def dlx(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])):
     ALUop_id = Signal(intbv(0)[2:])  
     
     control_ = control(Opcode_id, RegDst_id, Branch_id, MemRead_id, 
-                        MemtoReg_id, ALUop_id, MemWrite_id, ALUSrc_id, RegWrite_id, NopSignal)
+                        MemtoReg_id, ALUop_id, MemWrite_id, ALUSrc_id, RegWrite_id, NopSignal, Stall)
     
 
     #REGISTER FILE
@@ -367,11 +371,15 @@ def dlx(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])):
     
 
 
+    hazard_detector_  = hazard_detector(MemRead_ex, Rt_ex, 
+                                        Rs_id, Rt_id, 
+                                        Stall)
+
     if DEBUG:
         @always(Clk.posedge)
         def debug_internals():
-            sep =  "\n" + "=" * 34 + " time %s " + "=" * 34 
-            print sep % now()
+            sep =  "\n" + "=" * 31 + " cycle %i (%ins)" + "=" * 31
+            print sep %  ( int(now()/2.0 + 0.5), now() )
             #IF
             print "\n" +  "." * 35 + " IF " + "." * 35 + "\n"
             print "PcAdderOut_if %i | BranchAdderO_mem %i | PCSrc_mem %i | NextIp %i | Ip %i"  % (PcAdderOut_if, BranchAdderO_mem, PCSrc_mem, NextIp, Ip)
@@ -389,6 +397,8 @@ def dlx(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])):
                 print '-->CONTROL'
                 print 'RegDst %i  ALUop %s  ALUSrc %i | Branch %i  MemR %i  MemW %i |  RegW %i Mem2Reg %i ' % \
                         ( RegDst_id , bin(ALUop_id, 2), ALUSrc_id, Branch_id, MemRead_id, MemWrite_id, RegWrite_id, MemtoReg_id)
+
+                print 'Stall --> %i' % Stall
 
             if True: #if now () > 4:
 
@@ -462,7 +472,7 @@ def testBench():
 
 def main():
     sim = Simulation(testBench())
-    sim.run(19)
+    sim.run(15)
 
 
 if __name__ == '__main__':
