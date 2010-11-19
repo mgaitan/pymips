@@ -62,28 +62,25 @@ import unittest
 
 class testBench(unittest.TestCase):
 
-    #know bug : all signal from tesbench are named as connected one stage before.
-    #           For example: Rd_ex  should be Rd_mem . 
-    #           I'm so tired (and I'm lazy) to fix this mistake. 
 
 
     def setUp(self):
-        self.Rd_ex, self.Rs_id, self.Rt_id, self.Rd_mem = [ Signal(intbv(0)[5:]) for i in range(4) ] 
+        self.Rd_mem, self.Rs_ex, self.Rt_ex, self.Rd_wb = [ Signal(intbv(0)[5:]) for i in range(4) ] 
 
-        self.RegWrite_ex, self.RegWrite_mem = [ Signal(intbv(0)[1:]) for i in range(2) ] 
+        self.RegWrite_mem, self.RegWrite_wb = [ Signal(intbv(0)[1:]) for i in range(2) ] 
 
         self.ForwardA, self.ForwardB = [ Signal(intbv(0)[2:]) for i in range(2) ] 
 
-        self.forwarding_ = toVHDL(forwarding, self.RegWrite_ex, self.Rd_ex, self.Rs_id, self.Rt_id,   #inputs of EX hazards
-                    self.RegWrite_mem, self.Rd_mem,   #left inputs of MEM hazards
+        self.forwarding_ = toVHDL(forwarding, self.RegWrite_mem, self.Rd_mem, self.Rs_ex, self.Rt_ex,   #inputs of EX hazards
+                    self.RegWrite_wb, self.Rd_wb,   #left inputs of MEM hazards
                     self.ForwardA, self.ForwardB
                     )
     
 
-    def test_not_regwrite_ex(self):
+    def test_not_regwrite_mem(self):
         @instance
         def test():
-            self.RegWrite_ex.next = 0
+            self.RegWrite_mem.next = 0
             yield delay(1)
             self.assertEqual(int(self.ForwardA), 0)
             self.assertEqual(int(self.ForwardB), 0)
@@ -92,10 +89,10 @@ class testBench(unittest.TestCase):
         sim = Simulation(self.forwarding_, test)
         sim.run()
 
-    def test_not_regwrite_mem(self):
+    def test_not_regwrite_wb(self):
         @instance
         def test():
-            self.RegWrite_mem.next = 0
+            self.RegWrite_wb.next = 0
             yield delay(1)
             self.assertEqual(int(self.ForwardA), 0)
             self.assertEqual(int(self.ForwardB), 0)
@@ -108,12 +105,12 @@ class testBench(unittest.TestCase):
         @instance
         def test():
         
-            self.RegWrite_ex.next = 1 
+            self.RegWrite_mem.next = 1 
 
             val = random.randint(1, 2**5)
 
-            self.Rd_ex.next = intbv(val)
-            self.Rs_id.next = intbv(val)
+            self.Rd_mem.next = intbv(val)
+            self.Rs_ex.next = intbv(val)
 
             yield delay(2)
 
@@ -127,12 +124,12 @@ class testBench(unittest.TestCase):
         @instance
         def test():
         
-            self.RegWrite_ex.next = 1 
+            self.RegWrite_mem.next = 1 
 
             val = random.randint(1, 2**5)
 
-            self.Rd_ex.next = intbv(val)
-            self.Rt_id.next = intbv(val)
+            self.Rd_mem.next = intbv(val)
+            self.Rt_ex.next = intbv(val)
 
             yield delay(2)
 
@@ -143,19 +140,19 @@ class testBench(unittest.TestCase):
         sim.run()
         
     def test_2a(self):
-        """RegWrite_mem == 1 and Rd_mem != 0 and Rd_ex != Rs_id and Rd_mem == Rs_id"""
+        """RegWrite_wb == 1 and Rd_wb != 0 and Rd_mem != Rs_ex and Rd_wb == Rs_ex"""
 
         @instance
         def test():
         
-            self.RegWrite_mem.next = 1 
+            self.RegWrite_wb.next = 1 
 
             val = random.randint(1, 2**5)
 
-            self.Rd_mem.next = intbv(val)
-            self.Rs_id.next = intbv(val)
+            self.Rd_wb.next = intbv(val)
+            self.Rs_ex.next = intbv(val)
 
-            self.Rd_ex.next = intbv(val + 1)
+            self.Rd_mem.next = intbv(val + 1)
 
             yield delay(2)
 
@@ -166,19 +163,19 @@ class testBench(unittest.TestCase):
         sim.run()
 
     def test_2b(self):
-        """elif RegWrite_mem == 1 and Rd_mem != 0 and Rd_ex != Rt_id and Rd_mem == Rt_id"""
+        """elif RegWrite_wb == 1 and Rd_wb != 0 and Rd_mem != Rt_ex and Rd_wb == Rt_ex"""
 
         @instance
         def test():
         
-            self.RegWrite_mem.next = 1 
+            self.RegWrite_wb.next = 1 
 
             val = random.randint(1, 2**5)
 
-            self.Rd_mem.next = intbv(val)
-            self.Rt_id.next = intbv(val)
+            self.Rd_wb.next = intbv(val)
+            self.Rt_ex.next = intbv(val)
 
-            self.Rd_ex.next = intbv(val + 1)
+            self.Rd_mem.next = intbv(val + 1)
 
             yield delay(2)
 
@@ -187,16 +184,6 @@ class testBench(unittest.TestCase):
 
         sim = Simulation(self.forwarding_, test)
         sim.run()
-
-
-
-    
-    def tearDown(self):
-        #~ print "RegW_ex %i | Rd_ex %i | Rs_id %i | Rt_id %i" % (self.RegWrite_ex, self.Rd_ex, self.Rs_id, self.Rt_id)
-        #~ print "RegW_mem %i | Rd_mem %i  " % (self.RegWrite_mem, self.Rd_mem)
-        #~ print ""
-        #~ print "ForwardA  %s | ForwardB  %s " % (bin(self.ForwardA, 2), bin(self.ForwardB, 2))
-        pass
 
             
 

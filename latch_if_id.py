@@ -35,9 +35,10 @@ def latch_if_id(clk, rst, instruction_in, pc_adder_in, instruction_out, pc_adder
             instruction_out.next = 0
             pc_adder_out.next = 0
         
-        elif not stall:
-            instruction_out.next = instruction_in
-            pc_adder_out.next = pc_adder_in
+        else:
+            if not stall:
+                instruction_out.next = instruction_in
+                pc_adder_out.next = pc_adder_in
 
 
     return latch
@@ -47,24 +48,28 @@ def testBench():
 
     i_in, pc_in, i_out, pc_out = [Signal(intbv(0)[32:]) for i in range(4)]
 
-    clk = Signal(intbv(0)[1:])
-    rst = Signal(intbv(0)[1:])
+    clk, rst, stall = [Signal(intbv(0)[1:]) for i in range(3)]
+    
    
-    latch_inst = toVHDL(latch_if_id, clk, rst, i_in, pc_in, i_out, pc_out)
+    latch_inst = toVHDL(latch_if_id, clk, rst, i_in, pc_in, i_out, pc_out, stall)
 
     @instance
     def stimulus():
         for i in range(10):
             i_in.next, pc_in.next = [Signal(intbv(random.randint(0, 255))[32:]) for i in range(2)]
             
-            if random.random() > 0.25:
+            if random.random() > 0.10:
                 clk.next = 1
             if random.random() > 0.75:
                 rst.next = 1
+            if random.random() > 0.5:
+                stall.next = 1
+
             yield delay(1)
-            print "Inputs: %i %i | clk: %i  rst: %i | Output: %i %i" % (i_in, pc_in, clk, rst, i_out, pc_out)
+            print "Inputs: %i %i | clk: %i  rst: %i stall:%i | Output: %i %i" % (i_in, pc_in, clk, rst, stall, i_out, pc_out )
             clk.next = 0
             rst.next = 0
+            stall.next = 0
             yield delay(1)
 
     return instances()

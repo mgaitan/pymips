@@ -16,14 +16,14 @@ Hennessy, diseñadores originales del procesador DLX.
 
 El código fuente, la documentación y la visualización de la historia de desarrollo
 puede encontrarse en el sitio web http://github.com/nqnwebs/pymips. 
-El trabajo ha sido liberado bajo licencia GNU GPL v3.0 [1]
+El trabajo ha sido liberado bajo licencia GNU GPL v3.0 [1]_ .
 
 
-Sobre el lenguaje
-=================
+Lenguaje de implementación
+==========================
 
 Python es un lenguaje de programación de alto nivel cuya filosofía hace hincapié 
-en una sintaxis clara y legible.
+en una sintáxis clara y legible.
 
 Se trata de un lenguaje de programación multiparadigma ya que soporta 
 orientación a objetos, programación imperativa y funcional. Es un lenguaje interpretado, 
@@ -96,13 +96,6 @@ manera:
     :width: 80 %
     :align: center
 
-Etapas y Latchs
----------------
-
-Los *latchs* se encargan de retener y estabilizar los datos entre las etapas.
-manteniendo la integridad de las señales y permitiendo así altas 
-velocidades de procesamiento. Son los componentes que permiten la paralelización 
-de la etapas.  
 
 
 Implementación
@@ -557,19 +550,250 @@ y resultado se lista a continuación:
    :nostderr:
 
 
+Forwarding unit
++++++++++++++++
+
+La parelización del pipeline se basa en la superposición de las distintas etapas
+de ejecución de cada instrucción. En los casos en que una instrucción depende
+del resultado de una precedente se produce un hazard de datos. 
+
+Por ejemplo::
+
+
+    add $r1, $r2, $r3
+    sub $r5, $r1, $r4
+
+
+En este caso, la 2º instrucción necesita como operando el resultado en el registro 
+1 de la operación precedente, que en el flujo normal del pipeline no estará disponible
+hasta la etapa de WB (5º ciclo). Sin embargo, en este tipo de dependencias, 
+una solución el la técnica de *forwarding* o cortocircuito. Concretamente, el resultado
+de la primera operación ya se conoce en la etapa de ejecución, por lo que puede 
+cortocircuitarse este resultado para que justo un ciclo después (cuando el valor 
+de la suma ``$r2 + $r3`` esté en la etapa MEM) reemplace al valor de ``$r1`` 
+como primer operando de la ALU. 
+
+Este control de dependencia de datos lo realiza la unidad de forwarding. 
+Detecta un 2 pares de condiciones: que el registro destino (``Rd``) de una instrucción
+en etapa de memoria (el caso del ejemplo) o en WB (que se produce cuando 
+hay dependencia de datos entre dos instrucciones separadas por una no dependendiente)
+es el mismo que alguno de los operandos (``Rs`` o ``Rt``) de la instrucción 
+en etapa EX. 
+
+Para no hacer forwarding innecesariamente (hay instrucciones que no escriben datos)
+se controla también si la señal de control ``RegWrite`` en etapa MEM está activa. 
+
+.. aafig::
+    :aspect: 60
+    :scale: 150
+    :proportional:
+    :align: center
+    :textual:
+                
+                  Forw A   Forw B
+                     ^        ^   
+                     |        |
+                  +--+--------+----+
+                  |                +-< Rd_mem
+          Rs_ex >-+  'Forwarding'  |
+                  |    'Unit'      +-< Rd_wb
+          Rt_ex >-+                |
+                  |                |
+                  +--+----------+--+
+                     ^          ^
+                'RegWrite'   'RegWrite'
+                 '(mem)'       '(wb)'
+
+
+Esta unidad produce dos señales de control (``ForwardA`` y ``ForwardB``) de 2 bits
+que puede tomar valores 0, 1 o 2 para controlar sendos multiplexores a la entradas
+de la ALU. La significación de cada valor se describe en esta tabla:
+
+
+.. image:: img/forwarding_table.png
+   :width: 90 %
+
+
+La implementación de este componente es la siguiente:
+
+.. literalinclude:: ../../forwarding.py
+   :pyobject: forwarding
+
+En reemplazo de un TestBench se ha realizado una seria de pruebas de unitarias
+que prueban distintas combinaciones de la señales de entrada y verifican que 
+el resultado de la señal de control para cada multiplexor sea correcto. 
+
+Esos test se detallan en el código implementado::
+
+.. literalinclude:: ../../forwarding.py
+   :pyobject: testBench
+
+Al ejecutar el módulo Python, el framework para *Unittest' incorporado de manera
+estándar con el lenguaje ejecuta el método ``setUp`` previamente 
+y luego cada uno de las pruebas (métodos de la clase 
+``testBench`` que comienzan con el prefijo ``test_``) y verifica el resultado
+de las aserciones. Por supuesto, en la implemtación todos los test son satisfechos:
+
+::
+    ----------------------------------------------------------------------
+    Ran 6 tests in 0.362s
+
+    OK
+
+
+Hazard detector
+++++++++++++++++
+
+Existe un caso de dependecia de datos que no puede resolverse mediante *forwarding*.
+Es el caso cuando un dato necesario para ejecutar una instrucción depende de la 
+lectura desde memoria en una instrucción precedente:
+
+Por ejemplo::
+
+    lw $r1, 5($r1)
+    add $r2, $r1, $r3
+
+
+En este ejemplo el valor de ``$r1`` según la primera instrucción deberá ser 
+el valor de la posición de memoria ``$r1 + 5``, pero esto no sucederá hasta la etapa 
+de WriteBack en el 5to ciclo, mientras que dicho dato es necesario en el 4to ciclo
+en la etapa de ejecución de la instrucción ``add``. 
+
+La solución en este caso es "pausar" (*stall*) el pipeline por un ciclo para permitir 
+que la lógica de forwarding pueda manejar la dependencia.
+
+.. aafig::
+    :aspect: 60
+    :scale: 150
+    :proportional:
+    :align: center
+    :textual:
+                
+                  Stall
+                     ^        
+                     |        
+                  +--+--------+----+
+                  |                +-< Rt_ex
+          Rs_id >-+  'Hazard'      |
+                  |    'Detector'  |
+          Rt_id >-+                |
+                  |                |
+                  +--+-------------+
+                     ^       
+                'MemRead'   
+                 '(ex)'     
+
+La señal de *Stall* inhibe el incremento del contrador de programa (PC) y del latch
+``IF/ID``. Además pone a 0 todas las señales de control, de manera que ningún dato
+sea grabado (ya sea en el banco de registros o en la memoria de datos).
+Esto es, básicamente, instroducir una instrucción ``nop`` (*no operation*) entre
+la instrucción de carga y la r-type::
+
+    lw $r1, 5($r1)
+    nop
+    add $r2, $r1, $r3
+
+
+El código de implementación de esta unidad es el siguiente::
+
+.. literalinclude:: ../../forwarding.py
+   :pyobject: forwarding
+
+Los test unitarios se detallan en el siguiente código::
+
+.. literalinclude:: ../../forwarding.py
+   :pyobject: testBench
+
+
+Latchs
+-------
+
+Un latch es dispositivo secuencial que refresca los puertos de salida con los valores
+de los puertos de entrada correspondientes ante el flanco (positivo) de una señal
+de clock o trigger. Además puede incorporar una señal de Reset o Flush, que 
+pone todos los puertos de salida a 0 independientemente del valor de las entradas,
+y también una señal de *Stall* o inhibidor, que mantiene el valor previo de los 
+puertos de salida en caso de estar a 1. 
+
+.. aafig::
+    :aspect: 60
+    :scale: 150
+    :proportional:
+    :align: center
+
+            +------------+
+            |            |
+   Inputs >-|            |-> Outputs
+            |  latch     |
+            |            |
+            +------------+
+               ^   ^   ^   
+              Clk Rst Stall  
+
+Los *latchs* se encargan de retener y estabilizar los datos entre las etapas.
+manteniendo la integridad de las señales. 
+Son los componentes claves para permitir la paralelización de la etapas.  
+
+Como nomenclatura, cuando se menciona el componente ``IF/ID`` se refiere al 
+latch entre la etada *Intruction Fetch (IF)* e *Intruction Decoder (ID)*.
+
+Todos los componentes de este tipo son análogos, por lo que sólo se mostrará en 
+este reporte el código de  ``IF/ID`` y su correspondiente TestBench.
+
+
+.. literalinclude:: ../../latch_if_id.py
+   :pyobject: latch_if_id
+
+
+El testbench genera señales de Clock, Reset y Stall aleatoriamente (con cierta
+probabilidad).
+
+.. literalinclude:: ../../latch_if_id.py
+   :pyobject: testBench
+
+Un resultado es el siguiente::
+
+
+.. program-output:: python /home/tin/facu/arq/project/latch_if_id.py
+   :nostderr:
+
+
 Datapath
 --------
 
+El datapath es la versión sin pipeline del procesador. Responde al siguiente
+diseño:
 
  .. image:: img/datapath.png
     :width: 100 %
 
+La característica de esta implementación es que las instrucciones no se 
+solapan, por lo que el proceso es ejecutar una instrucción desde el inicio 
+hasta el fin (4 o 5 ciclos) para recién comenzar a ejecutar la siguiente 
+instrucción. Por ello es que la frecuencia de incremento del PC es 4 o 5 veces
+mayor que la del clock general del sistema
 
+En el archivo *datapath.py* puede encontrarse su implementación.
 
 
 Pipeline
 --------
 
+Una versión preliminar del procesador con pipeline se encuentra en el archivo 
+*pipeline.py* . Esta versión implementa la paralelización mediante el uso 
+de los latchs pero no gestiona el control de hazards.
+
+Responde al siguiente diseño [2]_:
+
+ .. image:: img/pipeline.png
+    :width: 100 %
+
+
+.. [2] El diagrama ha sido levemente simplificado y por una cuestión de 
+       claridad se suprimen los nombres de algunas señales
+
 
 DLX
 ---
+
+Es el procesador completo
