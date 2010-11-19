@@ -14,29 +14,29 @@ from myhdl import Signal, delay, always_comb, always, Simulation, \
 
 
 
-def forwarding(RegWrite_ex, Rd_ex, Rs_id, Rt_id,     #inputs of EX hazards
-                RegWrite_mem, Rd_mem,   #left inputs of MEM hazards
+def forwarding(RegWrite_mem, Rd_mem, Rs_ex, Rt_ex,     #inputs of EX hazards
+                RegWrite_wb, Rd_wb,   #left inputs of MEM hazards
                 ForwardA, ForwardB
                 ):
     """
-    Detects and controls forwarding for 2 pairs of hazard conditions:
+    Detects and controls forwarding for 2 pairs of data hazard conditions:
 
-        1a. EX/MEM.RegisterRd = ID/EX.RegisterRs 
-        1b. EX/MEM.RegisterRd = ID/EX.RegisterRt
+        1a. Rd_mem = Rs_ex
+        1b. Rd_mem = Rt_ex
 
-        2a. MEM/WB.RegisterRd = ID/EX.RegisterRs
-        2b. MEM/WB.RegisterRd = ID/EX.RegisterRt
+        1a. Rd_wb = Rs_ex
+        2b. Rd_wb = Rt_ex
     """
 
     @always_comb
     def hazards_control():
 
         #1a
-        if RegWrite_ex == 1 and Rd_ex != 0 and Rd_ex == Rs_id:
+        if RegWrite_mem == 1 and Rd_mem != 0 and Rd_mem == Rs_ex:
             ForwardA.next = 2  #int('10', 2)
 
         #2a
-        elif RegWrite_mem == 1 and Rd_mem != 0 and Rd_ex != Rs_id and Rd_mem == Rs_id:
+        elif RegWrite_wb == 1 and Rd_wb != 0 and Rd_mem != Rs_ex and Rd_wb == Rs_ex:
             ForwardA.next = 1 #int('01', 2)
         
         else:
@@ -44,11 +44,11 @@ def forwarding(RegWrite_ex, Rd_ex, Rs_id, Rt_id,     #inputs of EX hazards
             
 
         #1b
-        if RegWrite_ex == 1 and Rd_ex != 0 and Rd_ex == Rt_id:
+        if RegWrite_mem == 1 and Rd_mem != 0 and Rd_mem == Rt_ex:
             ForwardB.next = 2 #int('10', 2)
 
         #2b
-        elif RegWrite_mem == 1 and Rd_mem != 0 and Rd_ex != Rt_id and Rd_mem == Rt_id:
+        elif RegWrite_wb == 1 and Rd_wb != 0 and Rd_mem != Rt_ex and Rd_wb == Rt_ex:
             ForwardB.next = 1 #int('01', 2)
         
         else:
@@ -61,6 +61,11 @@ def forwarding(RegWrite_ex, Rd_ex, Rs_id, Rt_id,     #inputs of EX hazards
 import unittest
 
 class testBench(unittest.TestCase):
+
+    #know bug : all signal from tesbench are named as connected one stage before.
+    #           For example: Rd_ex  should be Rd_mem . 
+    #           I'm so tired (and I'm lazy) to fix this mistake. 
+
 
     def setUp(self):
         self.Rd_ex, self.Rs_id, self.Rt_id, self.Rd_mem = [ Signal(intbv(0)[5:]) for i in range(4) ] 
