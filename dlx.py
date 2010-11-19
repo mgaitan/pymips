@@ -102,6 +102,9 @@ def dlx(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])):
     BranchAdderO_mem = Signal(intbv(0, min=MIN, max=MAX)[32:])
     PCSrc_mem   = Signal(intbv(0)[1:]) #control of mux for program_counter on IF stage - (branch or inmediante_next)    
 
+    FlushOnBranch = PCSrc_mem           # 1 when beq condition is asserted => flush IF / ID / EX to discard 
+                                        # instructions chargued wrongly
+
     WrRegDest_wb = Signal(intbv(0)[32:])        #register pointer where MuxMemO_wb data will be stored.
     MuxMemO_wb = Signal(intbv(0, min=MIN, max=MAX))    #data output from WB mux connected as Write Data input on Register File (ID stage)
 
@@ -113,6 +116,8 @@ def dlx(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])):
 
     Stall = Signal(intbv(0)[1:])  #when asserted the pipeline is stalled. It 'freezes' PC count 
                                   #and put all Control Signals to 0's
+    
+
     
 
     ##############################
@@ -148,7 +153,7 @@ def dlx(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])):
 
 
 
-    latch_if_id_ = latch_if_id(Clk, Reset, Instruction_if, PcAdderOut_if, Instruction_id, PcAdderOut_id, Stall)
+    latch_if_id_ = latch_if_id(Clk, FlushOnBranch, Instruction_if, PcAdderOut_if, Instruction_id, PcAdderOut_id, Stall)
 
 
     ##############################
@@ -215,7 +220,7 @@ def dlx(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])):
     Address32_ex = Signal(intbv(0, min=MIN, max=MAX)) 
 
     
-    latch_id_ex_ = latch_id_ex(Clk, Reset, 
+    latch_id_ex_ = latch_id_ex(Clk, FlushOnBranch, 
                                 PcAdderOut_id, 
                                 Data1_id, Data2_id, Address32_id,
                                 Rs_id, Rt_id, Rd_id, Func_id, 
