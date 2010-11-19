@@ -34,7 +34,7 @@ from forwarding import forwarding
 from hazard_detector import hazard_detector
 
 
-
+SIM_TIME = 14   #time to simulation. 
 
 DEBUG = True  #set to false to convert 
 
@@ -75,7 +75,7 @@ def dlx(clk_period=1, Reset=Signal(intbv(0)[1:]), Zero=Signal(intbv(0)[1:])):
 
     * Signals are in ``CamelCase``
 
-    * Instances are with ``under_score``
+    * Instances are with ``under_score_`` (with a last ``_``)
 
     * The signals shared two or more stage are suffixed with the pipeline stage to which it belongs.
       For example: ``PcAdderO_if``  before IF/ID latch is the same signal than 
@@ -477,7 +477,7 @@ def testBench():
 
 def main():
     sim = Simulation(testBench())
-    sim.run(15)
+    sim.run(SIM_TIME)
 
 
 if __name__ == '__main__':

@@ -126,6 +126,25 @@ de forma de onda o la impresión por pantalla, permite una verificación mucho
 más fiable y rápida. 
 
 
+Convenciones de códificación
+-----------------------------
+
+Sobre todo en las implementación a nivel estructural (las distintas versiones
+del procesador) la cantidad de señales internas e instancias de componentes 
+es grande. Para facilitar la diferenciación semántica de cada *objeto* se 
+definió la siguiente convención: 
+
+    * La señales se definen en ``CamelCase``
+
+    * La instancias de componente se escriben como ``under_score_`` (con un 
+      ``_`` al final)
+
+    * La señales que se comparten por dos o más etapas (que atraviesan un 
+      latch) tiene como sufijo la etapa de pipeline a la que pertenencen. 
+      Por ejemplo: ``PcAdderO_if``, que se encuentra antes del latch ``IF/ID`` 
+      es la misma señal que ``PcAdderO_id`` después del latch. 
+
+
 Componentes
 -----------
 
@@ -796,4 +815,143 @@ Responde al siguiente diseño [2]_:
 DLX
 ---
 
-Es el procesador completo
+Es el procesador completo incorpora la unidad de forwarding y la detección de 
+hazards. 
+
+El conexionado de la unidad de forwarding se ilustra en el siguiente gráfico: 
+
+
+ .. image:: img/forwarding_conections.png
+    :width: 100 %
+
+Una representación general [3]_ del DLX se muestra en la siguiente figura:
+
+ .. image:: img/dlx_simplified.png
+    :width: 100 %
+
+
+.. [3] La etapadas ID y EX están simplificadas (extensor de signo y lógica 
+       de control de branch no se muestran). 
+
+El archivo de código fuente *dlx.py* contiene la implementación, a nivel 
+estructural, del procesador completo. 
+
+Como se explica en la descripción de cada componente, la *unidad de 
+forwarding* implementa la lógica para hazard de datos entre instrucciones r-types de 1 o 
+2 saltos, mientras que el *hazard detector* aplica la técnica de la 
+inserción de *stalls* aplicables a los hazard de datos del tipo  *Read after 
+Load* y los hazard de control o branch.
+
+
+
+Ejemplo de Forwarding 
+++++++++++++++++++++++
+
+Para ejemplificar el funcionamiento del forwarding se ejecuta en el DLX el 
+siguente programa :
+
+   ====================  ==========================================
+     ensamblador           instrucciones compiladas
+   ====================  ==========================================
+    add $r1, $r2, $r3       000000 00010 00011 00001 00000 100000
+    sub $r5, $r1, $r4       000000 00001 00100 00101 00000 100010
+   ====================  ==========================================    
+
+Dada la inicialización del banco de registros al valor ``i+1`` para cada 
+registro i, las operaciones precedentes equivalen al siguiente pseudocódigo::
+
+   ==============  ============  ======================
+    pseudocódigo    operadores    resultado esperado
+   ==============  ============  ======================
+    r1 = r2 + r3   r1 = 3 + 4      r1 = 7
+    r5 = r1 - r4   r5 = 7 - 5      r5 = 2
+   ==============  ============  ======================
+
+En el archivo *dump_raw_forw.txt* se encuentra la salida estándar completa 
+para una simulación durante 6 ciclos de reloj de ejecución de este programa.
+
+Las claves de la correción en la ejecución son: 
+
+* El forwarding se produce en el 4to ciclo::
+
+    ForwardA 2
+
+* El multiplexor intervenido es el A (primer operando de la ALU) debido a que 
+  el destino (``Rd``) de la 1º instrucción es el mismo que el primer 
+  operador (``Rs``) de la segunda. 
+
+* En el 4to ciclo puede observarse que si bien ``Data2`` (el verdadero valor de 
+  ``r1`` en ese instante) es ``2``, debido al forwarding el operando que ingresa a 
+  la ALU es ``7``, que efectivamente el resultado de la operación ALU previa::
+   
+    AluResult_mem 7
+
+* Al final, puede observarse que el estado del los primeros bancos de registros en el 
+  6º ciclo es:: 
+
+    reg: [1, 7, 3, 4, 5, 2]    
+
+  Lo cual es correcto. 
+
+Ejemplo de hazard *Read after Load*
++++++++++++++++++++++++++++++++++++++
+
+El programa que se simula en este caso es el siguiente:
+
+   ====================  ==========================================
+     ensamblador           instrucciones compiladas
+   ====================  ==========================================
+    lw $r1, 5($r1)          100011 00001 00001  0000000000000101
+    add $r2, $r1, $r3       000000 00001 00011 00010 00000 100000
+   ====================  ==========================================    
+
+Como antes, los registros se inicializan al valor ``i + 1``, y la posición 
+de memoria 7 se inicializa a ``51`` (valor arbitrario) 
+
+La significación y los resultados esperados se resumen en la siguiente tabla. 
+
+   ==================  =============  ======================
+   pseudocódigo        operadores     resultado esperado
+   ==================  =============  ======================
+    r1 = Mem[r1 + 5]    r1 = Mem[7]      r1 = 51
+    r2 = r1 + r3        r2 = 51 + 4      r2 = 55
+   =================   =============  ======================
+
+En el archivo *dump_raw_stall.txt* se encuentra la salida estándar completa 
+para una simulación durante 7 ciclos de reloj de ejecución de este programa.
+
+La claves de interpretación se resumen a continuación:
+
+*  En el 3º ciclo, cuando la segunda instrucción llega a la etapa ID, se 
+   detecta el hazard y se produce el stall. En la línea 110 del dump se 
+   observa::
+
+    Stall --> 1
+
+
+* Esto repercute en que todas las señales de control a partir de ese ciclo se 
+  ponen a 0:: 
+
+    RegDst 0  ALUop 00  ALUSrc 0 | Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+
+* Y que durante el siguiente ciclo (el 4to), la instrucción en IF es 
+  la misma (2297888 en decimal)
+
+* En el 5to ciclo la unidad de forwarding ya puede cortocircuitar el 
+  dato solicitado a memoria (``ForwardA 1``) haciendo que el operador para la 
+  etapa de ejecución sea ``51`` en vez de ``2`` que es el valor de ``Data1`` 
+  en ese instante. 
+
+* Debido a este *stall* la cantidad de ciclos usados para ejecutar el 
+  programa completo es 6 en vez de 5 como en el ejemplo de hazard de datos 
+  anterior, donde el dato podía encontrarse en una etapa precedente y 
+  resolverse directamente por forwarding
+
+* Al final de la simulación puede observarse que el estado del banco de 
+  registros es el siguiente::
+
+    reg: [1, 51, 55, 4, 5, 6]
+
+  Lo cual es correcto.
+
+
