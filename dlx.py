@@ -34,7 +34,7 @@ from forwarding import forwarding
 from hazard_detector import hazard_detector
 
 
-SIM_TIME = 14   #time to simulation. 
+SIM_TIME = 20   #time to simulation. 
 
 DEBUG = True  #set to false to convert 
 

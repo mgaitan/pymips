@@ -11,7 +11,7 @@ principalmente para propósitos educativos, y se utiliza ampliamente en cursos d
 nivel universitario sobre arquitectura de computadoras.
 
 El desarrollo de este trabajo ha sido guiado principalmente por el libro
-[Computer Organization and Design]_, escrito por David Patterson y John 
+"Computer Organization and Design" [Patterson-Hennessy2005]_, escrito por David Patterson y John 
 Hennessy, diseñadores originales del procesador DLX. 
 
 El código fuente, la documentación y la visualización de la historia de desarrollo
@@ -32,10 +32,11 @@ usa tipado dinámico, es fuertemente tipado y es multiplataforma.
 MyHDL es un paquete (un conjunto de módulos y funciones Python) que permite utilizar 
 la potencia de alto nivel de Python en reemplazo de un lenguaje de descripción de hardware 
 tradicional. Más aun, con algunas restricciones menores, el código Python-MyHDL 
-es convertible a VHDL o Verilog automáticamente. 
+es convertible a VHDL o Verilog automáticamente. Puede verse un detalle de 
+característicsa y ejemplos en el manual de usuario [MyHDLDoc]_.
 
 También es posible generar un archivo de descripción de forma de onda de las 
-señales (archivos * .vcd *) implicadas en un determinado diseño. 
+señales (archivos *\.vcd*) implicadas en un determinado diseño. 
 
 Es importante destacar que MyHDL_ permite valerse de la potencia de Python 
 como lenguaje de alto nivel, pero sin salirse del *scope* de la descripción 
@@ -46,7 +47,7 @@ Verilog, aunque la posibilidad de instrospección de Python permite automatizar
 e inferir aspectos, por ejemplo, el comportamiento de los puertos (se detecta
 si es un puerto de entrada o salida). 
 
-En el artículo [Why MyHDL]_ se detallan muchas ventajas de su uso. Entre ellas 
+En el artículo [WhyMyHDL]_ se detallan muchas ventajas de su uso. Entre ellas 
 se destacan: 
 
  * Facilidad de uso: Python es mucho más fácil de aprender que VHDL o Verilog
@@ -59,15 +60,7 @@ se destacan:
 
 .. [1] http://www.gnu.org/licenses/gpl.html
 
-.. _Python: http://python.org
-.. _MyHDL: http://myhdl.org
 
-
-.. [Why MyHDL]: *Why MyHDL?*, Jan Decaluwe, 2009, http://myhdl.org
-.. [Computer Organization and Design]: *Computer Organization and Design, 3th 
-                                        edition*, David Patterson and John 
-                                        Hennessy, Morgan Kaufmman Publishers, 
-                                        CA, 2005
 
 Arquitectura
 =============
@@ -254,7 +247,7 @@ función, registro source, target y destiny, etc. Para realizar esta
 separación se implementó un simple decodificador combinacional. 
 
 .. literalinclude:: ../../instruction_decoder.py
-   :pyobject: instruction_decoder
+   :pyobject: instruction_dec
 
 
 
@@ -380,6 +373,7 @@ clock.
                   +----------------+
                           ^
                          Clk
+
 ALU
 +++
 
@@ -498,11 +492,11 @@ el sumador para saltos condicionales.
 
 
 .. literalinclude:: ../../sign_extender.py
-   :pyobject: sign_extender
+   :pyobject: sign_extend
 
 Se muestra tambien la conversión a VHDL
 
-.. literalinclude:: ../../vhdl/sign_extender.vhd
+.. literalinclude:: ../../vhdl/sign_extend.vhd
     :lines: 12-
 
 El resulado del testbench es el siguiente: 
@@ -642,18 +636,19 @@ En reemplazo de un TestBench se ha realizado una seria de pruebas de unitarias
 que prueban distintas combinaciones de la señales de entrada y verifican que 
 el resultado de la señal de control para cada multiplexor sea correcto. 
 
-Esos test se detallan en el código implementado::
+Esos test se detallan en el código implementado:
 
-.. literalinclude:: ../../forwarding.py
-   :pyobject: testBench
+    .. literalinclude:: ../../forwarding.py
+       :pyobject: testBench
 
-Al ejecutar el módulo Python, el framework para *Unittest' incorporado de manera
+Al ejecutar el módulo Python, el framework para *Unittest* incorporado de manera
 estándar con el lenguaje ejecuta el método ``setUp`` previamente 
 y luego cada uno de las pruebas (métodos de la clase 
 ``testBench`` que comienzan con el prefijo ``test_``) y verifica el resultado
 de las aserciones. Por supuesto, en la implemtación todos los test son satisfechos:
 
 ::
+
     ----------------------------------------------------------------------
     Ran 6 tests in 0.362s
 
@@ -713,19 +708,19 @@ la instrucción de carga y la r-type::
     add $r2, $r1, $r3
 
 
-El código de implementación de esta unidad es el siguiente::
+El código de implementación de esta unidad es el siguiente:
 
 .. literalinclude:: ../../forwarding.py
    :pyobject: forwarding
 
-Los test unitarios se detallan en el siguiente código::
+Los test unitarios se detallan en el siguiente código:
 
 .. literalinclude:: ../../forwarding.py
    :pyobject: testBench
 
 
 Latchs
--------
+++++++
 
 Un latch es dispositivo secuencial que refresca los puertos de salida con los valores
 de los puertos de entrada correspondientes ante el flanco (positivo) de una señal
@@ -740,14 +735,14 @@ puertos de salida en caso de estar a 1.
     :proportional:
     :align: center
 
-            +------------+
-            |            |
-   Inputs >-|            |-> Outputs
-            |  latch     |
-            |            |
-            +------------+
-               ^   ^   ^   
-              Clk Rst Stall  
+                +------------+
+                |            |
+       Inputs >-|            |-> Outputs
+                |  latch     |
+                |            |
+                +-+---+----+-+
+                  ^   ^    ^   
+                 Clk Rst 'Stall'
 
 Los *latchs* se encargan de retener y estabilizar los datos entre las etapas.
 manteniendo la integridad de las señales. 
@@ -770,8 +765,7 @@ probabilidad).
 .. literalinclude:: ../../latch_if_id.py
    :pyobject: testBench
 
-Un resultado es el siguiente::
-
+Un resultado es el siguiente:
 
 .. program-output:: python /home/tin/facu/arq/project/latch_if_id.py
    :nostderr:
@@ -853,18 +847,18 @@ siguente programa :
    ====================  ==========================================
      ensamblador           instrucciones compiladas
    ====================  ==========================================
-    add $r1, $r2, $r3       000000 00010 00011 00001 00000 100000
-    sub $r5, $r1, $r4       000000 00001 00100 00101 00000 100010
+    add $r1, $r2, $r3     000000 00010 00011 00001 00000 100000
+    sub $r5, $r1, $r4     000000 00001 00100 00101 00000 100010
    ====================  ==========================================    
 
 Dada la inicialización del banco de registros al valor ``i+1`` para cada 
-registro i, las operaciones precedentes equivalen al siguiente pseudocódigo::
+registro i, las operaciones precedentes equivalen al siguiente pseudocódigo:
 
    ==============  ============  ======================
     pseudocódigo    operadores    resultado esperado
    ==============  ============  ======================
-    r1 = r2 + r3   r1 = 3 + 4      r1 = 7
-    r5 = r1 - r4   r5 = 7 - 5      r5 = 2
+    r1 = r2 + r3    r1 = 3 + 4    r1 = 7
+    r5 = r1 - r4    r5 = 7 - 5    r5 = 2
    ==============  ============  ======================
 
 En el archivo *dump_raw_forw.txt* se encuentra la salida estándar completa 
@@ -908,14 +902,14 @@ El programa que se simula en este caso es el siguiente:
 Como antes, los registros se inicializan al valor ``i + 1``, y la posición 
 de memoria 7 se inicializa a ``51`` (valor arbitrario) 
 
-La significación y los resultados esperados se resumen en la siguiente tabla. 
+La significación y los resultados esperados se resumen en la siguiente tabla: 
 
    ==================  =============  ======================
-   pseudocódigo        operadores     resultado esperado
+    pseudocódigo        operadores     resultado esperado
    ==================  =============  ======================
     r1 = Mem[r1 + 5]    r1 = Mem[7]      r1 = 51
     r2 = r1 + r3        r2 = 51 + 4      r2 = 55
-   =================   =============  ======================
+   ==================  =============  ======================
 
 En el archivo *dump_raw_stall.txt* se encuentra la salida estándar completa 
 para una simulación durante 7 ciclos de reloj de ejecución de este programa.
@@ -955,3 +949,154 @@ La claves de interpretación se resumen a continuación:
   Lo cual es correcto.
 
 
+Ejemplo de hazard de control
+++++++++++++++++++++++++++++
+
+Los hazard de control o branch se producen cuando hay un salto condicional. 
+Para saber si el salto debe realizarse o se debe seguir procesando 
+linealmente es necesario conocer el resultado de la operación de la condición 
+(en la implementación del DLX la única instrucción de este tipo es ``beq``,  
+*branch on equal*,  que realiza una resta con lo operando de la ALU y verifica 
+el flag ``Zero`` ). 
+
+Dado que para realizar esta operación es necesario que la instrucción llegue 
+a la etapa de ejecución (3 ciclos) debe definirse una estrategia que permita 
+aprovechar el procesamiento de la etapas previas a EX para procesar otras 
+instrucciones. 
+
+La estrategia más simple, que es la implementada en este proyecto, es definir 
+que *a priori* el resultado de la condicion siempre es falso, es decir que el 
+*branch* no se toma. Si al obtener el resultado verificamos que la decisión 
+anticipada fue correcta, se habrán ganado dos ciclos de reloj  (las 
+intrucciones que se encuentran en IF e ID). En caso de que la decisión haya 
+sido incorrecta hay que descartar las dos instrucciones que ingresaron al 
+pipeline incorrectamente. 
+
+Esto se realiza sin hardware adicional, ya que el branch se detecta realmente 
+en la etapa MEM mediante la señal PCSrc (que controla un multiplexor cuyas 
+entradas son la ``PC+1`` o la dirección efectiva calculada ``PC+salto``. En 
+caso de producirse un salto, esa misma señal puede utilizarse para vaciar 
+(*flush*) los latchs ``IF/ID`` e ``ID/EX`` para descartar las dos 
+instrucciones erróneas, y poner todas las señales de 
+control a 0. Las instrucciones previas al salto que todavía se encuentran en 
+el pipeline finalizan su ejecución normal. 
+
+El programa que se simula en este caso es el siguiente:
+
+   ====================  ==========================================
+     ensamblador           instrucciones compiladas
+   ====================  ==========================================
+    add $r0, $r1, $r2     000000 00001 00010 00000 00000 100000 
+    beq r4, r4, -1        000100 00100 00100  1111111111111111
+    add $r1, $r2, $r3     000000 00010 00011 00001 00000 100000   
+    sub $r5, $r1, $r4     000000 00001 00100 00101 00000 100010
+   ====================  ==========================================    
+
+
+La significación y los resultados esperados se resumen en la siguiente tabla: 
+
+   ======================  ================  ========================
+    pseudocódigo            operadores        resultado esperado
+   ======================  ================  ========================
+    r0 = r1 + r2            r0 = 2 + 3        r0 = 5
+    if(r4 == r4) go2 $-1    5 == 5 => True    next_ip = 0        
+    r1 = r2 + r3            r1 = 3 + 4        instrucción descartada 
+    r5 = r1 - r4                              instrucción descartada   
+   ======================  ================  ========================
+
+    
+En el archivo *dump_control.txt* se encuentra la salida estándar completa 
+para una simulación durante 10 ciclos de reloj de ejecución de este programa.
+
+Las claves para interpretar la corrección de la ejecución se detallan a 
+continuación:
+
+* En el 4to ciclo en EX se realiza el cálculo de la condición (la resta ``5 - 
+  5``). El resultado es ``0`` y la señal ``Zero_ex`` se pone a ``1``. 
+  Significa que la condición es verdadera (obviamente, ya que se está comparando un 
+  registro con sí mismo) y por lo tanto el salto se realizará
+
+* En ese mismo ciclo puede observarse que las dos etapas previas (``IF`` 
+  e ``ID``) están procesando las dos instrucciones subsecuentes (``add`` en 
+  ``ID`` y ``sub`` en ``IF``. 
+
+* En el 5to ciclo las señales de detección de zero y la señal Branch 
+  generada en la unidad de control (ambas en ``1``) se encuentran en la etapa 
+  ``MEM`` y producen (mediante una compuerta AND) la señal ``PCSrc_mem`` a ``1``. Esta 
+  señal es equivalente a una señal de ``Flush``. 
+
+* Esa señal ``Flush`` vacía los latchs ``IF/ID`` e ``ID/EX`` por lo que las 
+  señales y buses son todos 0 en el 5to ciclo. 
+
+* También se observa que el nuevo ``Ip`` es ``0``, que se corresponde al 
+  salto de una instrucción hacia atrás (``-1``) respecto de la posición de 
+  la instrucción ``beq`` que implica volver a la primera instrucción del 
+  programa 
+
+* En la etapa de WB del 5to ciclo la instrucción previa al salto se completa (no ha sido 
+  afectada) y puede observarse que el estado de los registros es el 
+  siguiente::
+
+    reg: [5, 2, 3, 4, 5, 6] 
+
+  Lo cual es correcto. 
+
+* En el ciclo 9 la instrucción de salto vuelve a generar la señal ``PCSrc_mem`` 
+  a ``1`` y el programa salta al inicio nuevamente. El programa de ejemplo es 
+  bucle infinito. 
+
+
+Conclusiones
+=============
+
+La codificación de un procesador RISC sencillo pero completo ha permitido 
+consolidar conceptos teóricos como los diferentes tipos de hazards 
+(estructurales, de datos y de control) y las distintas estrategias para 
+solucionarlos.
+
+La paralelización a nivel de instrucciones y sus ventajas en el mejoramiento 
+del CPI para un conjunto de instrucciones se pudo medir comparando los ciclos 
+consumidos por la implementación Datapath_ y por la versión completa DLX_ -
+
+La posibilidad de "programar hardware" en un lenguaje de alto nivel, 
+valiéndose de técnicas como pruebas unitarias y la simulación permite unir 
+disciplinas a priori divergentes que confluyen en este trabajo.
+
+El hecho de haber utilizado el lenguaje de programación Python y el paquete 
+MyHDL para la codificación de este proyecto permitió una alta productividad 
+y un tiempo de desarrollo mucho más veloz que con lenguajes de descripción 
+de hardware tradicionales como VHDL o Verilog. Esto se debió en parte, por 
+supuesto, a que poseía conocimientos previos de python y no de los otros 
+lenguajes.
+
+Además, el hecho de que el código MyHDL sea convertible a VHDL o Verilog 
+permite hacer una comparación sintáctica de códigos que semánticamente 
+dicen lo mismo. 
+
+Quedó fuera de la experimentación realizada en este trabajo pero la 
+posiblidad de MyHDL de *cosimular* los TestBenchs codificados en Python con 
+las versiones de componentes en Verilog sintetizable es una tarea interesante 
+que demostraría contundemente las ventajas de la descripción de hardware a 
+"alto nivel*.
+
+
+
+
+
+.. _Python: http://python.org
+.. _MyHDL: http://myhdl.org
+
+.. [MyHDLDoc] : *MyHDL Documentation*, Jan Decaluwe, 2009, http://myhdl.org
+
+.. [WhyMyHDL] : *Why MyHDL?*, Jan Decaluwe, 2009, http://www.myhdl.org/doku.php/why
+
+.. [Patterson-Hennessy2005] : *Computer Organization and Design, 3th 
+                                        edition*, David Patterson and John 
+                                        Hennessy, Morgan Kaufmman Publishers, 
+                                        CA, 2005
+
+.. [Patterson-Hennessy2006]: *Computer Architecture: A Quantitative Approach, 
+                              4th Edition* , David Patterson and John 
+                              Hennessy,  Morgan Kaufmman Publishers, CA, 2006
+
+.. [Wiki_1]: *DLX*, Wikipedia Contributors, visto el 20-11-2010, http://en.wikipedia.org/wiki/DLX

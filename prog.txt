@@ -5,15 +5,15 @@
 #000000 00001 00100 00101 00000 100010   # r5 = r1 - r4         | sub $r5, $r1, $r4     | r5 = 2
 
 #read following load (to test hazard detector/stalls) . OK.
-100011 00001 00001  0000000000000101    # r1 = Mem[r1 + 5]     | lw $r1, 5($r1)        | r1 = 51
-000000 00001 00011 00010 00000 100000   # r2 = r1 + r3         | add $r2, $r1, $r3     | r2 = 55 
+#100011 00001 00001  0000000000000101    # r1 = Mem[r1 + 5]     | lw $r1, 5($r1)        | r1 = 51
+#000000 00001 00011 00010 00000 100000   # r2 = r1 + r3         | add $r2, $r1, $r3     | r2 = 55 
 
 
 # branch (with control hazard). Ok
-#000000 00001 00010 00000 00000 100000   # r0 = r1 + r2          | add $r0, $r1, $r2    | r0 = 5  (doesn't care really)
-#000100 00100 00100  1111111111111111    # if(r4 == r4) go2 $-1  | beq r4, r4, -1       | next_ip = 0
-#000000 00010 00011 00001 00000 100000   # r1 = r2 + r3          | add $r1, $r2, $r3     | instruction discarted
-#000000 00001 00100 00101 00000 100010   # r5 = r1 - r4          | sub $r5, $r1, $r4     | instruction discarted
+000000 00001 00010 00000 00000 100000   # r0 = r1 + r2          | add $r0, $r1, $r2    | r0 = 5  (doesn't care really)
+000100 00100 00100  1111111111111111    # if(r4 == r4) go2 $-1  | beq r4, r4, -1       | next_ip = 0
+000000 00010 00011 00001 00000 100000   # r1 = r2 + r3          | add $r1, $r2, $r3     | instruction discarted
+000000 00001 00100 00101 00000 100010   # r5 = r1 - r4          | sub $r5, $r1, $r4     | instruction discarted
 
 #load and store. OK
 #101011 00001 00010  0000000000000101    # Mem[r1 + 5] = r2     | sw $r2, 5($r1)        | mem[7] = 3
