@@ -1,0 +1,470 @@
+
+=============================== cycle 1 (1ns)===============================
+
+................................... IF ...................................
+
+PcAdderOut_if 1 | BranchAdderO_mem 0 | PCSrc_mem 0 | NextIp 1 | Ip 0
+Instruction_if 00000000001000100000000000100000 (2228256)
+
+................................... ID ...................................
+
+PcAdderO_id 0 | Instruction_id 00000000000000000000000000000000 (0) | Nop 1
+Op 000000 | Rs 0 | Rt 0 | Rd 0 | Func 0 | Addr16 0 | Addr32 0
+Data1 0 | Data2 0
+-->CONTROL
+RegDst 0  ALUop 00  ALUSrc 0 | Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+Stall --> 0
+
+................................... EX ...................................
+
+PcAdderO_ex 0 | BranchAdderO_ex 0 
+Rs 0 | Rt 0 | Rd 0 | Func 0 | Addr32 0
+Data1_ex 0 | Data2_ex 0
+ForwardA 0 | ForwardB 0
+ForwMux1Out 0 | ForwMux2Out 0
+-->CONTROL
+RegDst 0  ALUop 00  ALUSrc 0 | Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+--> ALU
+MuxAluDataSrc 0  | AluCtrl 0010 | AluResult_ex 0 | Zero_ex 1
+WrRegDest_ex 0
+
+...................................MEM ...................................
+
+BranchAdderO_mem 0 
+-->CONTROL
+Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+--> Branch
+Branch_mem 0 Zero 0 | PCSrc_mem 0
+--> Data mem
+AluResult_mem 0 | Data2_mem 0 | DataMemOut_mem 0 | MemW 0 MemR 0
+WrRegDest_mem 0
+
+...................................WB...................................
+
+CONTROL --> RegW 0 Mem2Reg 0 
+DataMemOut_wb 0 | AluResult_wb 0 | MuxMemO_wb 0 
+WrRegDest_wb 0 | MuxMemO_wb 0
+reg: [1, 2, 3, 4, 5, 6]
+
+=============================== cycle 2 (3ns)===============================
+
+................................... IF ...................................
+
+PcAdderOut_if 2 | BranchAdderO_mem 0 | PCSrc_mem 0 | NextIp 2 | Ip 1
+Instruction_if 00010000100001001111111111111111 (277151743)
+
+................................... ID ...................................
+
+PcAdderO_id 1 | Instruction_id 00000000001000100000000000100000 (2228256) | Nop 0
+Op 000000 | Rs 1 | Rt 2 | Rd 0 | Func 32 | Addr16 32 | Addr32 32
+Data1 2 | Data2 3
+-->CONTROL
+RegDst 1  ALUop 10  ALUSrc 0 | Branch 0  MemR 0  MemW 0 |  RegW 1 Mem2Reg 0 
+Stall --> 0
+
+................................... EX ...................................
+
+PcAdderO_ex 0 | BranchAdderO_ex 0 
+Rs 0 | Rt 0 | Rd 0 | Func 0 | Addr32 0
+Data1_ex 0 | Data2_ex 0
+ForwardA 0 | ForwardB 0
+ForwMux1Out 0 | ForwMux2Out 0
+-->CONTROL
+RegDst 0  ALUop 00  ALUSrc 0 | Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+--> ALU
+MuxAluDataSrc 0  | AluCtrl 0010 | AluResult_ex 0 | Zero_ex 1
+WrRegDest_ex 0
+
+...................................MEM ...................................
+
+BranchAdderO_mem 0 
+-->CONTROL
+Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+--> Branch
+Branch_mem 0 Zero 1 | PCSrc_mem 0
+--> Data mem
+AluResult_mem 0 | Data2_mem 0 | DataMemOut_mem 0 | MemW 0 MemR 0
+WrRegDest_mem 0
+
+...................................WB...................................
+
+CONTROL --> RegW 0 Mem2Reg 0 
+DataMemOut_wb 0 | AluResult_wb 0 | MuxMemO_wb 0 
+WrRegDest_wb 0 | MuxMemO_wb 0
+reg: [1, 2, 3, 4, 5, 6]
+
+=============================== cycle 3 (5ns)===============================
+
+................................... IF ...................................
+
+PcAdderOut_if 3 | BranchAdderO_mem 0 | PCSrc_mem 0 | NextIp 3 | Ip 2
+Instruction_if 00000000010000110000100000100000 (4392992)
+
+................................... ID ...................................
+
+PcAdderO_id 2 | Instruction_id 00010000100001001111111111111111 (277151743) | Nop 0
+Op 000100 | Rs 4 | Rt 4 | Rd 31 | Func 63 | Addr16 -1 | Addr32 -1
+Data1 5 | Data2 5
+-->CONTROL
+RegDst 1  ALUop 01  ALUSrc 0 | Branch 1  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+Stall --> 0
+
+................................... EX ...................................
+
+PcAdderO_ex 1 | BranchAdderO_ex 33 
+Rs 1 | Rt 2 | Rd 0 | Func 32 | Addr32 32
+Data1_ex 2 | Data2_ex 3
+ForwardA 0 | ForwardB 0
+ForwMux1Out 2 | ForwMux2Out 3
+-->CONTROL
+RegDst 1  ALUop 10  ALUSrc 0 | Branch 0  MemR 0  MemW 0 |  RegW 1 Mem2Reg 0 
+--> ALU
+MuxAluDataSrc 3  | AluCtrl 0010 | AluResult_ex 5 | Zero_ex 0
+WrRegDest_ex 0
+
+...................................MEM ...................................
+
+BranchAdderO_mem 0 
+-->CONTROL
+Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+--> Branch
+Branch_mem 0 Zero 1 | PCSrc_mem 0
+--> Data mem
+AluResult_mem 0 | Data2_mem 0 | DataMemOut_mem 0 | MemW 0 MemR 0
+WrRegDest_mem 0
+
+...................................WB...................................
+
+CONTROL --> RegW 0 Mem2Reg 0 
+DataMemOut_wb 0 | AluResult_wb 0 | MuxMemO_wb 0 
+WrRegDest_wb 0 | MuxMemO_wb 0
+reg: [1, 2, 3, 4, 5, 6]
+
+=============================== cycle 4 (7ns)===============================
+
+................................... IF ...................................
+
+PcAdderOut_if 4 | BranchAdderO_mem 33 | PCSrc_mem 0 | NextIp 4 | Ip 3
+Instruction_if 00000000001001000010100000100010 (2369570)
+
+................................... ID ...................................
+
+PcAdderO_id 3 | Instruction_id 00000000010000110000100000100000 (4392992) | Nop 0
+Op 000000 | Rs 2 | Rt 3 | Rd 1 | Func 32 | Addr16 2080 | Addr32 2080
+Data1 3 | Data2 4
+-->CONTROL
+RegDst 1  ALUop 10  ALUSrc 0 | Branch 0  MemR 0  MemW 0 |  RegW 1 Mem2Reg 0 
+Stall --> 0
+
+................................... EX ...................................
+
+PcAdderO_ex 2 | BranchAdderO_ex 1 
+Rs 4 | Rt 4 | Rd 31 | Func 63 | Addr32 -1
+Data1_ex 5 | Data2_ex 5
+ForwardA 0 | ForwardB 0
+ForwMux1Out 5 | ForwMux2Out 5
+-->CONTROL
+RegDst 1  ALUop 01  ALUSrc 0 | Branch 1  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+--> ALU
+MuxAluDataSrc 5  | AluCtrl 0110 | AluResult_ex 0 | Zero_ex 1
+WrRegDest_ex 31
+
+...................................MEM ...................................
+
+BranchAdderO_mem 33 
+-->CONTROL
+Branch 0  MemR 0  MemW 0 |  RegW 1 Mem2Reg 0 
+--> Branch
+Branch_mem 0 Zero 0 | PCSrc_mem 0
+--> Data mem
+AluResult_mem 5 | Data2_mem 3 | DataMemOut_mem 0 | MemW 0 MemR 0
+WrRegDest_mem 0
+
+...................................WB...................................
+
+CONTROL --> RegW 1 Mem2Reg 0 
+DataMemOut_wb 0 | AluResult_wb 0 | MuxMemO_wb 0 
+WrRegDest_wb 0 | MuxMemO_wb 0
+reg: [1, 2, 3, 4, 5, 6]
+
+=============================== cycle 5 (9ns)===============================
+
+................................... IF ...................................
+
+PcAdderOut_if 1 | BranchAdderO_mem 1 | PCSrc_mem 1 | NextIp 0 | Ip 0
+Instruction_if 00000000001000100000000000100000 (2228256)
+
+................................... ID ...................................
+
+PcAdderO_id 0 | Instruction_id 00000000000000000000000000000000 (0) | Nop 1
+Op 000000 | Rs 0 | Rt 0 | Rd 0 | Func 0 | Addr16 0 | Addr32 0
+Data1 1 | Data2 1
+-->CONTROL
+RegDst 0  ALUop 00  ALUSrc 0 | Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+Stall --> 0
+
+................................... EX ...................................
+
+PcAdderO_ex 0 | BranchAdderO_ex 0 
+Rs 0 | Rt 0 | Rd 0 | Func 0 | Addr32 0
+Data1_ex 0 | Data2_ex 0
+ForwardA 0 | ForwardB 0
+ForwMux1Out 0 | ForwMux2Out 0
+-->CONTROL
+RegDst 0  ALUop 00  ALUSrc 0 | Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+--> ALU
+MuxAluDataSrc 0  | AluCtrl 0010 | AluResult_ex 0 | Zero_ex 1
+WrRegDest_ex 0
+
+...................................MEM ...................................
+
+BranchAdderO_mem 1 
+-->CONTROL
+Branch 1  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+--> Branch
+Branch_mem 1 Zero 1 | PCSrc_mem 1
+--> Data mem
+AluResult_mem 0 | Data2_mem 5 | DataMemOut_mem 0 | MemW 0 MemR 0
+WrRegDest_mem 31
+
+...................................WB...................................
+
+CONTROL --> RegW 0 Mem2Reg 0 
+DataMemOut_wb 0 | AluResult_wb 5 | MuxMemO_wb 5 
+WrRegDest_wb 0 | MuxMemO_wb 5
+reg: [5, 2, 3, 4, 5, 6]
+
+=============================== cycle 6 (11ns)===============================
+
+................................... IF ...................................
+
+PcAdderOut_if 2 | BranchAdderO_mem 0 | PCSrc_mem 0 | NextIp 2 | Ip 1
+Instruction_if 00010000100001001111111111111111 (277151743)
+
+................................... ID ...................................
+
+PcAdderO_id 0 | Instruction_id 00000000000000000000000000000000 (0) | Nop 1
+Op 000000 | Rs 0 | Rt 0 | Rd 0 | Func 0 | Addr16 0 | Addr32 0
+Data1 5 | Data2 5
+-->CONTROL
+RegDst 0  ALUop 00  ALUSrc 0 | Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+Stall --> 0
+
+................................... EX ...................................
+
+PcAdderO_ex 0 | BranchAdderO_ex 0 
+Rs 0 | Rt 0 | Rd 0 | Func 0 | Addr32 0
+Data1_ex 0 | Data2_ex 0
+ForwardA 0 | ForwardB 0
+ForwMux1Out 0 | ForwMux2Out 0
+-->CONTROL
+RegDst 0  ALUop 00  ALUSrc 0 | Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+--> ALU
+MuxAluDataSrc 0  | AluCtrl 0010 | AluResult_ex 0 | Zero_ex 1
+WrRegDest_ex 0
+
+...................................MEM ...................................
+
+BranchAdderO_mem 0 
+-->CONTROL
+Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+--> Branch
+Branch_mem 0 Zero 1 | PCSrc_mem 0
+--> Data mem
+AluResult_mem 0 | Data2_mem 0 | DataMemOut_mem 0 | MemW 0 MemR 0
+WrRegDest_mem 0
+
+...................................WB...................................
+
+CONTROL --> RegW 0 Mem2Reg 0 
+DataMemOut_wb 0 | AluResult_wb 0 | MuxMemO_wb 0 
+WrRegDest_wb 31 | MuxMemO_wb 0
+reg: [5, 2, 3, 4, 5, 6]
+
+=============================== cycle 7 (13ns)===============================
+
+................................... IF ...................................
+
+PcAdderOut_if 3 | BranchAdderO_mem 0 | PCSrc_mem 0 | NextIp 3 | Ip 2
+Instruction_if 00000000010000110000100000100000 (4392992)
+
+................................... ID ...................................
+
+PcAdderO_id 2 | Instruction_id 00010000100001001111111111111111 (277151743) | Nop 0
+Op 000100 | Rs 4 | Rt 4 | Rd 31 | Func 63 | Addr16 -1 | Addr32 -1
+Data1 5 | Data2 5
+-->CONTROL
+RegDst 0  ALUop 01  ALUSrc 0 | Branch 1  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+Stall --> 0
+
+................................... EX ...................................
+
+PcAdderO_ex 0 | BranchAdderO_ex 0 
+Rs 0 | Rt 0 | Rd 0 | Func 0 | Addr32 0
+Data1_ex 5 | Data2_ex 5
+ForwardA 0 | ForwardB 0
+ForwMux1Out 5 | ForwMux2Out 5
+-->CONTROL
+RegDst 0  ALUop 00  ALUSrc 0 | Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+--> ALU
+MuxAluDataSrc 5  | AluCtrl 0010 | AluResult_ex 10 | Zero_ex 0
+WrRegDest_ex 0
+
+...................................MEM ...................................
+
+BranchAdderO_mem 0 
+-->CONTROL
+Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+--> Branch
+Branch_mem 0 Zero 1 | PCSrc_mem 0
+--> Data mem
+AluResult_mem 0 | Data2_mem 0 | DataMemOut_mem 0 | MemW 0 MemR 0
+WrRegDest_mem 0
+
+...................................WB...................................
+
+CONTROL --> RegW 0 Mem2Reg 0 
+DataMemOut_wb 0 | AluResult_wb 0 | MuxMemO_wb 0 
+WrRegDest_wb 0 | MuxMemO_wb 0
+reg: [5, 2, 3, 4, 5, 6]
+
+=============================== cycle 8 (15ns)===============================
+
+................................... IF ...................................
+
+PcAdderOut_if 4 | BranchAdderO_mem 0 | PCSrc_mem 0 | NextIp 4 | Ip 3
+Instruction_if 00000000001001000010100000100010 (2369570)
+
+................................... ID ...................................
+
+PcAdderO_id 3 | Instruction_id 00000000010000110000100000100000 (4392992) | Nop 0
+Op 000000 | Rs 2 | Rt 3 | Rd 1 | Func 32 | Addr16 2080 | Addr32 2080
+Data1 3 | Data2 4
+-->CONTROL
+RegDst 1  ALUop 10  ALUSrc 0 | Branch 0  MemR 0  MemW 0 |  RegW 1 Mem2Reg 0 
+Stall --> 0
+
+................................... EX ...................................
+
+PcAdderO_ex 2 | BranchAdderO_ex 1 
+Rs 4 | Rt 4 | Rd 31 | Func 63 | Addr32 -1
+Data1_ex 5 | Data2_ex 5
+ForwardA 0 | ForwardB 0
+ForwMux1Out 5 | ForwMux2Out 5
+-->CONTROL
+RegDst 0  ALUop 01  ALUSrc 0 | Branch 1  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+--> ALU
+MuxAluDataSrc 5  | AluCtrl 0110 | AluResult_ex 0 | Zero_ex 1
+WrRegDest_ex 4
+
+...................................MEM ...................................
+
+BranchAdderO_mem 0 
+-->CONTROL
+Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+--> Branch
+Branch_mem 0 Zero 0 | PCSrc_mem 0
+--> Data mem
+AluResult_mem 10 | Data2_mem 5 | DataMemOut_mem 0 | MemW 0 MemR 0
+WrRegDest_mem 0
+
+...................................WB...................................
+
+CONTROL --> RegW 0 Mem2Reg 0 
+DataMemOut_wb 0 | AluResult_wb 0 | MuxMemO_wb 0 
+WrRegDest_wb 0 | MuxMemO_wb 0
+reg: [5, 2, 3, 4, 5, 6]
+
+=============================== cycle 9 (17ns)===============================
+
+................................... IF ...................................
+
+PcAdderOut_if 1 | BranchAdderO_mem 1 | PCSrc_mem 1 | NextIp 0 | Ip 0
+Instruction_if 00000000001000100000000000100000 (2228256)
+
+................................... ID ...................................
+
+PcAdderO_id 0 | Instruction_id 00000000000000000000000000000000 (0) | Nop 1
+Op 000000 | Rs 0 | Rt 0 | Rd 0 | Func 0 | Addr16 0 | Addr32 0
+Data1 5 | Data2 5
+-->CONTROL
+RegDst 0  ALUop 00  ALUSrc 0 | Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+Stall --> 0
+
+................................... EX ...................................
+
+PcAdderO_ex 0 | BranchAdderO_ex 0 
+Rs 0 | Rt 0 | Rd 0 | Func 0 | Addr32 0
+Data1_ex 0 | Data2_ex 0
+ForwardA 0 | ForwardB 0
+ForwMux1Out 0 | ForwMux2Out 0
+-->CONTROL
+RegDst 0  ALUop 00  ALUSrc 0 | Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+--> ALU
+MuxAluDataSrc 0  | AluCtrl 0010 | AluResult_ex 0 | Zero_ex 1
+WrRegDest_ex 0
+
+...................................MEM ...................................
+
+BranchAdderO_mem 1 
+-->CONTROL
+Branch 1  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+--> Branch
+Branch_mem 1 Zero 1 | PCSrc_mem 1
+--> Data mem
+AluResult_mem 0 | Data2_mem 5 | DataMemOut_mem 0 | MemW 0 MemR 0
+WrRegDest_mem 4
+
+...................................WB...................................
+
+CONTROL --> RegW 0 Mem2Reg 0 
+DataMemOut_wb 0 | AluResult_wb 10 | MuxMemO_wb 10 
+WrRegDest_wb 0 | MuxMemO_wb 10
+reg: [5, 2, 3, 4, 5, 6]
+
+=============================== cycle 10 (19ns)===============================
+
+................................... IF ...................................
+
+PcAdderOut_if 2 | BranchAdderO_mem 0 | PCSrc_mem 0 | NextIp 2 | Ip 1
+Instruction_if 00010000100001001111111111111111 (277151743)
+
+................................... ID ...................................
+
+PcAdderO_id 0 | Instruction_id 00000000000000000000000000000000 (0) | Nop 1
+Op 000000 | Rs 0 | Rt 0 | Rd 0 | Func 0 | Addr16 0 | Addr32 0
+Data1 5 | Data2 5
+-->CONTROL
+RegDst 0  ALUop 00  ALUSrc 0 | Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+Stall --> 0
+
+................................... EX ...................................
+
+PcAdderO_ex 0 | BranchAdderO_ex 0 
+Rs 0 | Rt 0 | Rd 0 | Func 0 | Addr32 0
+Data1_ex 0 | Data2_ex 0
+ForwardA 0 | ForwardB 0
+ForwMux1Out 0 | ForwMux2Out 0
+-->CONTROL
+RegDst 0  ALUop 00  ALUSrc 0 | Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+--> ALU
+MuxAluDataSrc 0  | AluCtrl 0010 | AluResult_ex 0 | Zero_ex 1
+WrRegDest_ex 0
+
+...................................MEM ...................................
+
+BranchAdderO_mem 0 
+-->CONTROL
+Branch 0  MemR 0  MemW 0 |  RegW 0 Mem2Reg 0 
+--> Branch
+Branch_mem 0 Zero 1 | PCSrc_mem 0
+--> Data mem
+AluResult_mem 0 | Data2_mem 0 | DataMemOut_mem 0 | MemW 0 MemR 0
+WrRegDest_mem 0
+
+...................................WB...................................
+
+CONTROL --> RegW 0 Mem2Reg 0 
+DataMemOut_wb 0 | AluResult_wb 0 | MuxMemO_wb 0 
+WrRegDest_wb 4 | MuxMemO_wb 0
+reg: [5, 2, 3, 4, 5, 6]
