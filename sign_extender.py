@@ -32,7 +32,7 @@ def testBench():
     
     @instance
     def stimulus():
-        for i in range(32):
+        for i in range(8):
             value = random.randint(-(2**15), 2**15-1)
             data_in.next = intbv( value, min=-(2**15), max=2**15-1)
             

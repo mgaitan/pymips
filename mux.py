@@ -34,7 +34,7 @@ def mux2(sel, mux_out, chan1, chan2):
     return route_channel
 
 
-def mux4(sel, mux_out, chan1, chan2, chan3, chan4):
+def mux4(sel, mux_out, chan1, chan2, chan3, chan4=Signal(0)):
     """
     4-channels m-bits multiplexor
 
@@ -70,7 +70,7 @@ def testBench():
     @instance
     def stimulus():
         while True:
-            S.next = Signal(intbv(random.randint(0, 4))[2:])
+            S.next = Signal(intbv(random.randint(0, 1))[1:])
             #I0.next , I1.next = [Signal(intbv(random.randint(0, 255))[32:]) for i in range(2)]
             I2.next, I3.next = [Signal(intbv(random.randint(0, 255))[32:]) for i in range(2)]
             #print "Inputs: %i %i %i %i | S: %i | Output: %i" % (I0, I1, I2, I3, S, O)

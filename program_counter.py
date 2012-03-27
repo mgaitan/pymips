@@ -14,22 +14,23 @@ from clock_driver import clock_driver
 
 from alu import ALU
 
-def program_counter(clk, input, output):
+def program_counter(clk, input, output, stall=Signal(intbv(0)[1:])):
     """
 
-    clk : clock signal   . On posedge it refresh the output with it's internal state
+    clk : clock signal 
     input: the input count
     output: address output
     """
 
-    @always(clk.posedge)
-    def update():        
-        output.next = input
+    @always(clk.negedge)
+    def update():
+        if not stall:
+            output.next = input
 
     return update
 
 
-def pc_testbench():
+def testbench():
 
     clk = Signal(intbv(0)[1:])
     i = Signal(intbv(0, min=0, max=32))
@@ -37,7 +38,6 @@ def pc_testbench():
 
     clkdriver_inst = clock_driver(clk)
     pc_inst = program_counter( clk, i, o)
-    
     
     
     c = Signal(0b0010)
@@ -54,8 +54,8 @@ def pc_testbench():
 
 
 def main():
-    tc =  traceSignals(pc_testbench)
-    sim = Simulation(tc)
+    #tc =  traceSignals(testbench)
+    sim = Simulation(testbench())
     sim.run(20)
 
 if __name__ == '__main__':
