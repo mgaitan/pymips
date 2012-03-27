@@ -10,9 +10,8 @@ In particular, it's a 5 stages DLX_ processor, as described in the book
 *Computer Organization and Design* by John Hennessy and David Patterson
 [PatHen05]_
 
-It's was not tested in hardware, but its (VHDL) description was tested and simulated
+It wasn't tested in hardware, but its (VHDL) description was tested and simulated
 succesfully and should be ready to try in a FPGA_
-
 
 How it is implemented
 ---------------------
