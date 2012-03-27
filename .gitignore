@@ -1,0 +1,6 @@
+*~
+*.pyc
+*.db
+*~lock*
+dist
+*.egg-info
