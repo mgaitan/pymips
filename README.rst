@@ -38,23 +38,22 @@ PyMIPS requires only MyHDL_ to run. To install you could use pip::
 
  $ git clone https://github.com/nqnwebs/pymips.git
  $ cd pymips
- $ sudo pip install -r requirements.txt
+ $ pip install -r requirements.txt
 
-(As usual, I recommend to to this in a virtualenv --and you could try pypy
- speed in the way)
+(As usual, I recommend to to this in a virtualenv)
 
 Run
 +++
 
 The main module is ``dlx.py``. PyMIPS execute a simple RISC bytecode (HEX data).
-By default it runs ``programs/simple.txt``.
+By default it runs ``programs/simple.txt``::
 
-    $ python pymips/dlx.py
+  $ python pymips/dlx.py
 
 No compiler is given, but you could check the default program to write your own
 and run as argument::
 
-    $ python pymips/dlx.py your_program.txt
+  $ python pymips/dlx.py your_program.txt
 
 Documentation
 -------------
