@@ -4,7 +4,8 @@ A MIPS processor implemented with Python
 What it is
 -----------
 
-PyMIPS is a formal implementation of a MIPS_ pipelined processor.
+PyMIPS is a formal implementation of a MIPS_ pipelined processor developed
+as an academical experiment.
 
 In particular, it's a 5 stages DLX_ processor, as described in the book
 *Computer Organization and Design* by John Hennessy and David Patterson
